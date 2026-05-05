@@ -98,7 +98,7 @@ body {
   background-clip: text;
 }
 .hero-sub {
-  font-size: 1.15rem; color: #141413 !important; max-width: 640px; margin: 0 auto 2.5rem;
+  font-size: 1.15rem; color: #555; max-width: 640px; margin: 0 auto 2.5rem;
   line-height: 1.7;
 }
 .hero-meta {
@@ -229,18 +229,16 @@ body {
   list-style: none; margin: 0; padding: 0;
 }
 .issues-list li {
-  display: block;
-  padding: 0.8rem 0 0.8rem 1rem;
-  border-bottom: 1px solid rgba(217, 119, 87, 0.1);
-  border-left: 3px solid var(--orange);
-  margin-bottom: 0.6rem;
-  font-size: 0.9rem; line-height: 1.6;
-  background: rgba(217,119,87,0.03);
-  border-radius: 0 4px 4px 0;
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.7rem 0; border-bottom: 1px solid rgba(217, 119, 87, 0.1);
+  font-size: 0.9rem; line-height: 1.55;
 }
-.issues-list li:last-child { margin-bottom: 0; }
+.issues-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.issues-list li:first-child { padding-top: 0; }
 .issue-icon {
-  display: none;
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  margin-top: 0.15rem;
 }
 .icon-letter {
   font-family: var(--font-heading); font-weight: 700; font-size: 0.72rem;
@@ -566,7 +564,7 @@ body {
   color: var(--mid-gray); line-height: 1.5;
 }
 .hero-contact-label { display: block; color: var(--dark); font-weight: 500; }
-.hero-contact-sub { display: block; font-size: 0.72rem; font-style: italic; color: #555555; }
+.hero-contact-sub { display: block; font-size: 0.72rem; font-style: italic; }
 
 .hero-li-link {
   display: inline-flex; align-items: center; gap: 0.45rem;
@@ -599,7 +597,7 @@ body {
 }
 .hero-update {
   font-family: var(--font-heading); font-size: 0.72rem;
-  color: #141413;
+  color: var(--mid-gray);
 }
 
 /* === FEEDBACK WIDGET === */
@@ -800,9 +798,7 @@ body {
 <header class="hero">
   <div class="hero-tag">NotebookLM Studio Guide</div>
   <h1>Drive NotebookLM Studio to output nuanced, dense <em>artifacts to your specs</em></h1>
-  <p class="hero-sub">March 2026 Major Update.<br>
-Beautiful slides, videos, audios... all <mark style="background:#fffb2e;color:#1a1600;padding:0 0.25em;border-radius:2px;">USELESS</mark><br>
-<mark style="background:#fffb2e;color:#1a1600;padding:0 0.25em;border-radius:2px;">Get your desired output instead.</mark> That's why this guide exists.</p>
+  <p class="hero-sub">The March 2026 update shipped a full production studio. Which does not follow your instructions. Beautiful, useless outputs. This guide shows you how to control what comes out by controlling what goes in.</p>
 
   <div class="hero-frontier">
     <span class="hf-dot"></span>
@@ -819,7 +815,7 @@ Beautiful slides, videos, audios... all <mark style="background:#fffb2e;color:#1
     <span class="hero-meta-sep">|</span>
     <span class="hero-version">V2.1.03</span>
     <span class="hero-meta-sep">|</span>
-    <span class="hero-update">Last update: April 1, 2026</span>
+    <span class="hero-update">April 1, 2026</span>
     <span class="hero-meta-sep">|</span>
     <span class="hero-changelog" title="Changelog coming soon">Changelog</span>
   </div>
