@@ -772,6 +772,94 @@ body {
   .feedback-panel { max-width: 100%; }
   .feedback-wall { padding: 0 1.2rem; }
 }
+
+/* ============================================================
+   ANTI-FLATTENING SECTION
+   ============================================================ */
+.antiflat-section {
+  background: var(--dark);
+  border-radius: 10px;
+  padding: 2.2rem 2rem 1.8rem;
+  margin-bottom: 4rem;
+  scroll-margin-top: 5rem;
+  border: 1.5px solid var(--orange);
+  box-shadow: 0 0 0 5px rgba(217,119,87,0.07), 0 6px 36px rgba(20,20,19,0.22);
+  position: relative;
+  overflow: hidden;
+}
+.antiflat-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--orange) 0%, #c4944a 55%, var(--complement) 100%);
+}
+.antiflat-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--orange); color: white;
+  font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  padding: 0.3rem 0.75rem; border-radius: 3px;
+  margin-bottom: 1rem;
+}
+.antiflat-section h2 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: 1.75rem; line-height: 1.15;
+  color: var(--orange); margin-bottom: 0.75rem;
+  letter-spacing: -0.01em; border-bottom: none; padding-bottom: 0;
+}
+.antiflat-subtitle {
+  font-family: var(--font-body);
+  font-size: 1.05rem; color: rgba(250,249,245,0.8);
+  line-height: 1.7; margin-bottom: 1.4rem;
+  border-bottom: 1px solid rgba(176,174,165,0.14);
+  padding-bottom: 1.3rem;
+}
+.antiflat-subtitle strong { color: rgba(250,249,245,0.96); font-weight: 600; }
+.antiflat-instruction {
+  background: rgba(217,119,87,0.11);
+  border-left: 3px solid var(--orange);
+  border-radius: 0 5px 5px 0;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.9rem; color: rgba(250,249,245,0.88);
+  line-height: 1.65; margin-bottom: 1.4rem;
+  font-family: var(--font-body);
+}
+.antiflat-instruction strong {
+  font-family: var(--font-heading); font-weight: 600; color: var(--orange);
+}
+.antiflat-instruction em { color: rgba(250,249,245,0.75); font-style: italic; }
+.antiflat-prompt-label {
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.13em; color: var(--mid-gray);
+  margin-bottom: 0.55rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.antiflat-prompt-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(176,174,165,0.14);
+}
+.antiflat-prompt-block {
+  background: rgba(0,0,0,0.42);
+  border: 1px solid rgba(217,119,87,0.28);
+  color: var(--light);
+  padding: 1.4rem 1.5rem; border-radius: 6px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.79rem; line-height: 1.82;
+  white-space: pre-wrap; word-break: break-word;
+  overflow-x: auto;
+}
+.antiflat-copy-row {
+  display: flex; justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+.antiflat-copy-btn {
+  font-family: var(--font-heading); font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--orange); background: transparent;
+  border: 1px solid rgba(217,119,87,0.4);
+  padding: 0.38rem 0.9rem; border-radius: 4px;
+  cursor: pointer; transition: all 0.2s;
+}
+.antiflat-copy-btn:hover { background: rgba(217,119,87,0.1); border-color: var(--orange); }
 </style>
 </head>
 <body>
@@ -781,6 +869,7 @@ body {
   <div class="nav-inner">
     <div class="nav-brand"><span class="dot"></span> NotebookLM: Taking Control of Outputs</div>
     <div class="nav-links">
+      <a href="#antiflat" style="color:var(--orange);font-weight:700;">⚡ USE FIRST</a>
       <a href="#engine">How It Works</a>
       <a href="#failures">Failure Modes</a>
       <a href="#inputs">Inputs</a>
@@ -827,6 +916,7 @@ body {
   <!-- TOC -->
   <div class="toc">
     <div class="toc-title">Contents</div>
+    <a href="#antiflat" style="background:rgba(217,119,87,0.08);border-radius:5px;padding:0.5rem 0.75rem;border-left:3px solid var(--orange);margin-bottom:0.4rem;font-weight:700;color:var(--orange);"><span class="toc-tag" style="color:var(--orange);">⚡ Must-Do</span> USE THIS FIRST — Anti-Flattening Super Prompt</a>
     <a href="#intro"><span class="toc-tag">Intro</span> A Studio That Ignores the Director</a>
     <a href="#engine"><span class="toc-tag">01</span> How NotebookLM Thinks — And Why It Flattens Your Data</a>
     <a href="#failures"><span class="toc-tag">02</span> Seven Named Failure Modes</a>
@@ -922,6 +1012,64 @@ body {
       <span class="v v-g"></span><strong>Nano Banana Pro</strong> — visual generation: infographics, slide deck design.<br>
       <span class="v v-g"></span><strong>Veo 3</strong> — video generation: video overviews, animations.<br><br>
       <span class="v v-l"></span>When you generate a slide deck, Gemini writes the content, Nano Banana Pro creates the visual design, and the two must coordinate. Failures in that coordination explain why slide revision is unreliable — you are asking two different models to agree on a localized edit.
+    </div>
+  </section>
+
+  <!-- ANTI-FLATTENING -->
+  <section class="antiflat-section" id="antiflat">
+    <div class="antiflat-badge">⚡ Use This First — Always</div>
+    <h2>USE THIS FIRST, AT ALL TIMES</h2>
+    <p class="antiflat-subtitle">This super prompt will prevent the information flattening that happens when NotebookLM reads sources. <strong>Add it as a Pasted Text Source before anything else.</strong> Then add your sources and ask 2–3 key, fundamental questions that require very detailed responses.</p>
+
+    <div class="antiflat-instruction">
+      <strong>How to activate:</strong> In your notebook, click <strong>+ Add source → Copied text</strong>, paste the full prompt below, and name it <em>"ANTI-FLATTENING INSTRUCTIONS — Read First"</em>. Add this before uploading any other source. It will be the first thing NotebookLM reads.
+    </div>
+
+    <div class="antiflat-prompt-label">Anti-Flattening Prompt — Copy in full</div>
+    <div class="antiflat-prompt-block" id="antiflat-prompt-text">You are now operating in Deep Analysis Mode.
+
+Your single, non-negotiable rule is: Never flatten, simplify, generalize, or collapse nuances.
+
+Every single detail, subtlety, technical specificity, contextual caveat, trade-off, implicit assumption, and layered meaning present in the sources must be preserved and actively used in every output you produce.
+
+Explicit prohibitions (you will be judged on strict compliance):
+
+Do not summarize by removing qualifiers ("usually", "in most cases", "under these constraints", "with the following exceptions").
+
+Do not replace precise technical terms, acronyms, version numbers, chip names, performance metrics, or architectural details with generic phrases.
+
+Do not turn complex multi-layered explanations into "high-level overviews" or "key takeaways" that erase distinctions.
+
+Do not merge similar-but-not-identical concepts.
+
+Do not soften or omit constraints, long development cycles, regulatory requirements, manufacturing realities, or organizational responsibility aspects.
+
+Mandatory behavior:
+
+Quote or directly reference the exact wording or data from the sources whenever a nuance lives there.
+
+When explaining, keep all layers visible at once: the what, the why, the how, the constraints, the trade-offs, the historical context, and the implications for real-world deployment.
+
+If the sources contain contradictions, ambiguities, or evolving design decisions, surface them explicitly instead of resolving them into a single clean story.
+
+In every response (whether written summary, podcast script, study guide, timeline, comparison table, or FAQ), explicitly call out and utilize every relevant nuance from the uploaded material.
+
+When generating audio (podcast), speak in the same level of technical depth as the sources — do not "make it accessible" by flattening. Use the full vocabulary and keep the complexity intact.
+
+If you ever feel tempted to simplify for clarity, stop and instead add an extra sentence that preserves the original nuance.
+
+Activation trigger:
+
+This instruction applies to every single query in this notebook from now on, until I explicitly tell you to switch back to normal mode.
+
+You must begin every response with the internal thought: "Deep Analysis Mode — preserving all nuances".
+
+You are now in Deep Analysis Mode.
+
+Begin.</div>
+
+    <div class="antiflat-copy-row">
+      <button class="antiflat-copy-btn" onclick="copyAntiFlat(this)">Copy Prompt</button>
     </div>
   </section>
 
@@ -1869,6 +2017,29 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
 sections.forEach(s => observer.observe(s));
+
+function copyAntiFlat(btn) {
+  const text = document.getElementById('antiflat-prompt-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.style.color = '#788c5d';
+    btn.style.borderColor = '#788c5d';
+    setTimeout(() => {
+      btn.textContent = 'Copy Prompt';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2200);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = 'Copy Prompt'; }, 2200);
+  });
+}
 </script>
 
 </body>
