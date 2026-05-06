@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The definitive PM/PMM guide to NotebookLM. Control outputs by engineering inputs. Studio formats, failure modes, Gemini integration, and the full extension ecosystem.">
+<meta property="og:title" content="NotebookLM: From Toy to Professional Studio">
+<meta property="og:description" content="The definitive PM/PMM guide to mastering NotebookLM's production studio.">
+<meta property="og:type" content="article">
+<title>Drive NotebookLM Studio to output nuanced, dense artifacts to your specs</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dark: #141413;
+  --light: #faf9f5;
+  --mid-gray: #b0aea5;
+  --light-gray: #e8e6dc;
+  --orange: #d97757;
+  --orange-soft: rgba(217,119,87,0.10);
+  --orange-mid:  rgba(217,119,87,0.22);
+  --complement: #2d6e7e;
+  --complement-soft: rgba(45,110,126,0.09);
+  --complement-mid:  rgba(45,110,126,0.20);
+  --blue: #6a9bcc;
+  --green: #788c5d;
+  --amber: #c4944a;
+  --teal: #4a7a7a;
+  --font-heading: 'Poppins', Arial, sans-serif;
+  --font-body: 'Lora', Georgia, serif;
+  --radius-md: 7px;
+  --shadow-card: 0 1px 4px rgba(20,20,19,0.07), 0 4px 16px rgba(20,20,19,0.04);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; font-size: 17px; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--light);
+  color: var(--dark);
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === NAV === */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(20, 20, 19, 0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(176, 174, 165, 0.15);
+  transition: transform 0.3s ease;
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0.7rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem;
+  color: var(--light); letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.nav-brand .dot { display: inline-block; width: 8px; height: 8px; background: linear-gradient(135deg, var(--orange) 50%, var(--complement) 50%); border-radius: 50%; }
+.nav-links { display: flex; gap: 0.15rem; flex-wrap: wrap; }
+.nav-links a {
+  font-family: var(--font-heading); font-size: 0.7rem; font-weight: 500;
+  color: var(--mid-gray); text-decoration: none;
+  padding: 0.35rem 0.65rem; border-radius: 4px;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--light); background: var(--orange-soft); }
+.nav-links a.active { color: var(--light); background: var(--complement-mid); border-radius: 4px; }
+
+/* === HERO === */
+.hero {
+  padding: 8rem 2rem 5rem;
+  max-width: 900px; margin: 0 auto;
+  text-align: center;
+  border-bottom: 1px solid var(--light-gray);
+}
+.hero-tag {
+  font-family: var(--font-heading); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  color: var(--orange); margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.12; color: var(--dark);
+  margin-bottom: 1rem;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--orange) 0%, var(--complement) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 1.15rem; color: #555; max-width: 640px; margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+.hero-meta {
+  font-family: var(--font-heading); font-size: 0.82rem;
+  color: var(--dark); letter-spacing: 0.01em;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; flex-wrap: wrap;
+  margin-top: 2rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 1px solid var(--light-gray);
+  border-radius: 8px;
+  max-width: 580px;
+  margin-left: auto; margin-right: auto;
+  box-shadow: var(--shadow-card);
+}
+.hero-meta span { margin: 0; }
+.red-dot {
+  display: inline-block; width: 0.55em; height: 0.55em;
+  background: #d92b2b; border-radius: 50%;
+  vertical-align: middle; margin: 0 0.04em;
+  position: relative; top: -0.05em;
+}
+
+/* === MAIN CONTENT === */
+.content { max-width: 780px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+/* Section */
+.section { margin-bottom: 4rem; scroll-margin-top: 5rem; }
+.section-label {
+  font-family: var(--font-heading); font-size: 0.88rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--orange); margin-bottom: 0.5rem;
+  padding: 0.25rem 0 0.25rem 0.7rem;
+  border-left: 3px solid var(--orange);
+}
+.section-label.sl-complement {
+  color: var(--complement);
+  border-left-color: var(--complement);
+}
+.section h2 {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 1.85rem; line-height: 1.22;
+  color: var(--dark); margin-bottom: 1.1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--light-gray);
+  letter-spacing: -0.01em;
+}
+.section h3 {
+  font-family: var(--font-heading); font-weight: 600;
+  font-size: 1.2rem; color: var(--dark);
+  margin: 2.4rem 0 0.7rem;
+}
+.section h4 {
+  font-family: var(--font-heading); font-weight: 600;
+  font-size: 0.95rem; color: var(--complement);
+  margin: 1.6rem 0 0.5rem;
+}
+.section p { margin-bottom: 1rem; }
+.section strong { font-weight: 600; }
+
+/* Callout boxes */
+.callout {
+  padding: 1.2rem 1.4rem;
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+.callout-orange { background: var(--orange-soft); border-left: 3px solid var(--orange); }
+.callout-blue { background: rgba(106,155,204,0.08); border-left: 3px solid var(--blue); }
+.callout-green { background: rgba(120,140,93,0.08); border-left: 3px solid var(--green); }
+.callout-amber { background: rgba(196,148,74,0.08); border-left: 3px solid var(--amber); }
+.callout-teal { background: rgba(74,122,122,0.08); border-left: 3px solid var(--teal); }
+.callout-dark { background: rgba(20,20,19,0.04); border-left: 3px solid var(--dark); }
+.callout-complement { background: var(--complement-soft); border-left: 3px solid var(--complement); }
+.callout-label {
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 0.5rem; display: block;
+}
+.callout-orange .callout-label { color: var(--orange); }
+.callout-blue .callout-label { color: var(--blue); }
+.callout-green .callout-label { color: var(--green); }
+.callout-amber .callout-label { color: var(--amber); }
+.callout-teal .callout-label { color: var(--teal); }
+.callout-complement .callout-label { color: var(--complement); }
+
+/* Square bullet lists inside callouts */
+.square-list {
+  list-style: none; margin: 0.6rem 0 0; padding: 0;
+}
+.square-list li {
+  position: relative; padding-left: 1.2rem; margin-bottom: 0.7rem;
+  line-height: 1.55;
+}
+.square-list li:last-child { margin-bottom: 0; }
+.square-list li::before {
+  content: ''; position: absolute; left: 0; top: 0.45em;
+  width: 7px; height: 7px; background: var(--orange);
+  border-radius: 1px;
+}
+
+/* Issues card — prominent warning block */
+.issues-card {
+  border-radius: 8px; overflow: hidden;
+  margin: 1.8rem 0; border: 1px solid rgba(217, 119, 87, 0.25);
+  box-shadow: 0 2px 12px rgba(217, 119, 87, 0.06);
+}
+.issues-card-header {
+  background: var(--dark); padding: 0.8rem 1.4rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.issues-card-title {
+  font-family: var(--font-heading); font-weight: 700; font-size: 1rem;
+  color: var(--orange); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.issues-card-source {
+  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 500;
+  color: var(--mid-gray); letter-spacing: 0.04em;
+}
+.issues-card-source a { color: var(--mid-gray); text-decoration: underline; text-underline-offset: 2px; }
+.issues-card-source a:hover { color: var(--light); }
+.issues-card-body {
+  background: rgba(217, 119, 87, 0.05); padding: 1rem 1.4rem;
+}
+.issues-list {
+  list-style: none; margin: 0; padding: 0;
+}
+.issues-list li {
+  display: flex; gap: 0.8rem; align-items: flex-start;
+  padding: 0.7rem 0; border-bottom: 1px solid rgba(217, 119, 87, 0.1);
+  font-size: 0.9rem; line-height: 1.55;
+}
+.issues-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.issues-list li:first-child { padding-top: 0; }
+.issue-icon {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  margin-top: 0.15rem;
+}
+.icon-letter {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.72rem;
+  color: white; line-height: 1;
+}
+.issue-icon-decay { background: var(--orange); }
+.issue-icon-ghost { background: var(--blue); }
+.issue-icon-drown { background: var(--amber); }
+.issue-icon-regression { background: var(--teal); }
+
+/* Code / prompt blocks */
+.prompt-block {
+  background: var(--dark); color: var(--light);
+  padding: 1.2rem 1.4rem; border-radius: 6px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem; line-height: 1.7;
+  margin: 1rem 0 1.5rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Failure mode cards */
+.failure-grid {
+  display: grid; grid-template-columns: 1fr;
+  gap: 0.8rem; margin: 1.5rem 0;
+}
+.failure-card {
+  background: white; border: 1px solid var(--light-gray);
+  border-radius: 6px; padding: 1rem 1.2rem;
+  cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.failure-card:hover { border-color: var(--orange); box-shadow: 0 2px 12px rgba(217,119,87,0.08); }
+.failure-card.open { border-color: var(--orange); }
+.failure-card .fc-header {
+  display: flex; align-items: center; gap: 0.7rem;
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem;
+}
+.failure-card .fc-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--orange); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; flex-shrink: 0;
+}
+.failure-card .fc-arrow {
+  margin-left: auto; transition: transform 0.2s; font-size: 0.8rem; color: var(--mid-gray);
+}
+.failure-card.open .fc-arrow { transform: rotate(180deg); }
+.failure-card .fc-body {
+  display: none; margin-top: 0.8rem; padding-top: 0.8rem;
+  border-top: 1px solid var(--light-gray);
+  font-size: 0.9rem; line-height: 1.65;
+}
+.failure-card.open .fc-body { display: block; }
+
+/* Steps */
+.step {
+  display: flex; gap: 1rem; margin: 1.2rem 0;
+  padding: 1rem 0; border-bottom: 1px solid var(--light-gray);
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 1.1rem; color: var(--complement);
+  width: 28px; flex-shrink: 0; padding-top: 0.1rem;
+}
+.step-content { flex: 1; }
+.step-content strong { font-family: var(--font-heading); font-weight: 600; }
+
+/* Comparison table */
+.compare-table {
+  width: 100%; border-collapse: collapse; margin: 1.5rem 0;
+  font-size: 0.88rem;
+}
+.compare-table th {
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  text-align: left; padding: 0.7rem 1rem;
+  background: var(--dark); color: var(--light);
+  border-top: 2px solid var(--complement);
+}
+.compare-table td {
+  padding: 0.7rem 1rem; border-bottom: 1px solid var(--light-gray);
+  vertical-align: top;
+}
+.compare-table tr:hover td { background: rgba(74, 122, 122, 0.04); }
+
+/* Pipeline diagram */
+.pipeline {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 0.3rem; margin: 1.5rem 0; justify-content: center;
+}
+.pipeline-step {
+  background: white; border: 1px solid var(--light-gray);
+  border-radius: 6px; padding: 0.6rem 1rem;
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600;
+  text-align: center; color: var(--dark);
+}
+.pipeline-arrow { color: var(--complement); font-size: 1.1rem; font-weight: 700; }
+
+/* Workflow end-to-end */
+.workflow-steps {
+  counter-reset: wf;
+  margin: 1.5rem 0;
+}
+.wf-item {
+  counter-increment: wf;
+  display: flex; gap: 1rem; margin-bottom: 0.8rem;
+  padding: 0.8rem 1rem;
+  background: white; border-radius: 6px;
+  border: 1px solid var(--light-gray);
+  font-size: 0.9rem;
+}
+.wf-item::before {
+  content: counter(wf);
+  font-family: var(--font-heading); font-weight: 700;
+  color: var(--complement); font-size: 0.9rem;
+  width: 22px; flex-shrink: 0;
+}
+
+/* TOC */
+.toc {
+  background: white; border: 1px solid var(--light-gray);
+  border-radius: 8px; padding: 1.5rem 2rem;
+  margin: 2rem 0 3rem;
+}
+.toc-title {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 0.85rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--complement);
+  margin-bottom: 1rem;
+}
+.toc a {
+  display: block; padding: 0.35rem 0;
+  text-decoration: none; color: var(--dark);
+  font-family: var(--font-heading); font-size: 0.85rem; font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: all 0.15s;
+}
+.toc a:hover { color: var(--complement); border-bottom-color: var(--complement-mid); }
+.toc a .toc-tag {
+  font-size: 0.6rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--complement); margin-right: 0.5rem;
+  opacity: 0.75;
+}
+
+/* Audit markers */
+.v { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 3px; position: relative; top: -1px; }
+.v-g { background: var(--green); }      /* Google-verified */
+.v-c { background: var(--complement); } /* Community-tested */
+.v-s { background: var(--amber); }      /* Single-source */
+.v-l { background: #8b7ec8; }           /* Logic-derived */
+.v-x { background: #c45454; }           /* Contradicted/corrected */
+
+/* Audit legend */
+.audit-legend {
+  background: white; border: 1px solid var(--light-gray);
+  border-radius: 8px; margin: 0 0 2.5rem; overflow: hidden;
+}
+.audit-legend-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 1.2rem; cursor: pointer;
+  font-family: var(--font-heading); font-size: 0.78rem; font-weight: 600;
+  color: var(--dark); user-select: none;
+}
+.audit-legend-toggle:hover { background: var(--complement-soft); }
+.audit-legend-toggle .al-arrow { font-size: 0.7rem; color: var(--mid-gray); transition: transform 0.2s; }
+.audit-legend.open .al-arrow { transform: rotate(180deg); }
+.audit-legend-body {
+  display: none; padding: 0.6rem 1.2rem 1rem;
+  border-top: 1px solid var(--light-gray);
+  font-size: 0.82rem; line-height: 1.6;
+}
+.audit-legend.open .audit-legend-body { display: block; }
+.al-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.al-row:last-child { margin-bottom: 0; }
+.al-label { font-family: var(--font-heading); font-weight: 500; font-size: 0.78rem; }
+.al-note { font-size: 0.72rem; color: var(--mid-gray); margin-top: 0.5rem; font-style: italic; }
+
+/* NotebookLM > Gemini Visualization */
+.nblm-gemini-viz {
+  display: flex; gap: 0; align-items: stretch;
+  margin: 2rem 0 2.5rem;
+  border: 1px solid var(--light-gray); border-radius: 10px;
+  overflow: hidden; background: white;
+}
+.viz-side {
+  flex: 1; padding: 1.5rem 1.3rem;
+}
+.viz-nblm { background: rgba(20, 20, 19, 0.03); }
+.viz-gemini { background: rgba(106, 155, 204, 0.05); }
+.viz-header {
+  font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem;
+  color: var(--dark); margin-bottom: 0.15rem;
+}
+.viz-role {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.82rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+.viz-nblm .viz-role { color: var(--orange); }
+.viz-gemini .viz-role { color: var(--complement); }
+.viz-gemini .viz-role { color: var(--blue); }
+.viz-subtitle {
+  font-family: var(--font-body); font-size: 0.78rem;
+  color: var(--mid-gray); margin-bottom: 1rem;
+  font-style: italic;
+}
+.viz-capabilities { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.viz-cap {
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 500;
+  background: rgba(20, 20, 19, 0.05); padding: 0.3rem 0.6rem;
+  border-radius: 4px; color: var(--dark);
+}
+.viz-gemini .viz-cap { background: rgba(106, 155, 204, 0.1); }
+.cap-gem { border-left: 3px solid var(--amber); background: rgba(196, 148, 74, 0.1) !important; }
+.cap-canvas { border-left: 3px solid var(--teal); background: rgba(74, 122, 122, 0.1) !important; }
+.viz-constraint {
+  font-family: var(--font-body); font-size: 0.78rem;
+  color: #777; line-height: 1.7;
+  padding-top: 0.6rem; border-top: 1px solid var(--light-gray);
+}
+.viz-unlock { color: var(--dark); }
+.viz-lock { margin-right: 0.2rem; }
+
+/* Bridge */
+.viz-bridge {
+  width: 170px; min-width: 130px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 1rem 0.4rem;
+  background: linear-gradient(180deg, rgba(217,119,87,0.06) 0%, rgba(106,155,204,0.06) 100%);
+  position: relative;
+}
+.viz-arrow-line {
+  width: 60%; height: 2px;
+  background: linear-gradient(90deg, var(--orange), var(--complement));
+  border-radius: 1px;
+}
+.viz-bridge-labels {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding: 0.7rem 0;
+}
+.viz-flow {
+  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 500;
+  color: var(--dark); display: flex; align-items: center; gap: 0.3rem;
+  line-height: 1.3;
+}
+.viz-flow-arrow { font-weight: 800; font-size: 0.8rem; color: var(--orange); }
+.viz-flow-arrow-dim { color: var(--mid-gray); opacity: 0.5; }
+.viz-flow-left {
+  color: var(--mid-gray); font-size: 0.58rem;
+  justify-content: flex-end;
+}
+.viz-bridge-tag {
+  font-family: var(--font-heading); font-size: 0.6rem; font-weight: 600;
+  color: var(--teal); text-align: center; margin-top: 0.3rem;
+  line-height: 1.4;
+}
+.viz-bridge-tag small { font-weight: 400; color: var(--mid-gray); font-size: 0.55rem; }
+
+/* Responsive viz */
+@media (max-width: 700px) {
+  .nblm-gemini-viz { flex-direction: column; }
+  .viz-bridge {
+    width: 100%; min-width: unset;
+    flex-direction: row; padding: 0.8rem 1rem; gap: 0.8rem;
+  }
+  .viz-arrow-line { width: 2px; height: 30px; }
+  .viz-bridge-labels { padding: 0; }
+}
+
+/* Footer */
+.footer {
+  max-width: 780px; margin: 0 auto; padding: 2rem 2rem 4rem;
+  border-top: 2px solid var(--light-gray);
+  text-align: center;
+}
+.footer p {
+  font-family: var(--font-heading); font-size: 0.78rem;
+  color: var(--mid-gray);
+}
+.footer a { color: var(--orange); text-decoration: none; }
+.footer a:hover { color: var(--complement); }
+
+/* Responsive */
+@media (max-width: 700px) {
+  html { font-size: 15.5px; }
+  .nav-links { display: none; }
+  .hero { padding: 6rem 1.2rem 3rem; }
+  .content { padding: 0 1.2rem 4rem; }
+  .pipeline { flex-direction: column; }
+  .pipeline-arrow { transform: rotate(90deg); }
+}
+
+
+/* === HERO EXTRAS === */
+.hero-frontier {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  background: var(--complement-soft);
+  border: 1px solid var(--complement-mid);
+  border-left: 3px solid var(--complement);
+  border-radius: 0 6px 6px 0;
+  padding: 0.8rem 1.1rem;
+  margin: 1.8rem auto 1rem;
+  max-width: 640px;
+  text-align: left;
+  font-family: var(--font-heading); font-size: 0.82rem;
+  color: var(--dark); line-height: 1.55;
+}
+.hf-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--complement); flex-shrink: 0;
+  margin-top: 0.35em;
+}
+.hero-frontier strong { color: var(--complement); }
+
+.hero-contact-row {
+  margin: 0.6rem auto 0;
+  max-width: 500px;
+  font-family: var(--font-heading); font-size: 0.78rem;
+  color: var(--mid-gray); line-height: 1.5;
+}
+.hero-contact-label { display: block; color: var(--dark); font-weight: 500; }
+.hero-contact-sub { display: block; font-size: 0.72rem; font-style: italic; }
+
+.hero-li-link {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  text-decoration: none;
+  color: var(--dark); font-weight: 600; font-size: 0.84rem;
+  transition: color 0.2s;
+}
+.hero-li-link:hover { color: var(--complement); }
+.hero-li-link svg rect { transition: fill 0.2s; }
+.hero-li-link:hover svg rect { fill: var(--complement); }
+.hero-li-name { font-family: var(--font-heading); font-weight: 600; }
+
+.hero-version {
+  font-family: var(--font-heading); font-size: 0.72rem; font-weight: 700;
+  color: var(--complement); letter-spacing: 0.06em;
+  background: var(--complement-soft);
+  border: 1px solid var(--complement-mid);
+  padding: 0.2rem 0.6rem; border-radius: 4px;
+}
+
+.hero-changelog {
+  font-family: var(--font-heading); font-size: 0.72rem;
+  color: var(--mid-gray);
+  text-decoration: line-through; cursor: default;
+  opacity: 0.5;
+}
+.hero-meta-sep {
+  color: var(--light-gray); font-size: 1rem;
+  padding: 0 0.6rem;
+}
+.hero-update {
+  font-family: var(--font-heading); font-size: 0.72rem;
+  color: var(--mid-gray);
+}
+
+/* === FEEDBACK WIDGET === */
+.feedback-trigger {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+  background: var(--dark); color: var(--light);
+  border: none; border-radius: 50px;
+  padding: 0.65rem 1.2rem;
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.04em; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
+  box-shadow: 0 4px 20px rgba(20,20,19,0.18);
+  transition: all 0.2s;
+}
+.feedback-trigger:hover { background: var(--orange); transform: translateY(-2px); }
+.feedback-trigger .ft-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--orange); flex-shrink: 0;
+}
+.feedback-trigger:hover .ft-dot { background: var(--light); }
+
+.feedback-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(20,20,19,0.55); backdrop-filter: blur(4px);
+  align-items: flex-end; justify-content: flex-end;
+  padding: 2rem;
+}
+.feedback-overlay.open { display: flex; }
+
+.feedback-panel {
+  background: var(--light); border-radius: 10px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 8px 40px rgba(20,20,19,0.2);
+  overflow: hidden;
+}
+.fp-header {
+  background: var(--dark); padding: 1rem 1.4rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.fp-title {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem;
+  color: var(--light); letter-spacing: 0.04em;
+}
+.fp-title span { color: var(--orange); }
+.fp-close {
+  background: none; border: none; color: var(--mid-gray);
+  font-size: 1.1rem; cursor: pointer; padding: 0; line-height: 1;
+}
+.fp-close:hover { color: var(--light); }
+.fp-body { padding: 1.4rem; }
+.fp-desc {
+  font-family: var(--font-heading); font-size: 0.75rem;
+  color: #666; margin-bottom: 1rem; line-height: 1.55;
+}
+.fp-type-row {
+  display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+.fp-type {
+  font-family: var(--font-heading); font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.3rem 0.75rem; border-radius: 20px; cursor: pointer;
+  border: 1.5px solid var(--light-gray); background: white;
+  color: var(--mid-gray); transition: all 0.15s;
+}
+.fp-type:hover { border-color: var(--dark); color: var(--dark); }
+.fp-type.selected { background: var(--dark); color: var(--light); border-color: var(--dark); }
+.fp-type.selected.t-critique { background: #c45454; border-color: #c45454; }
+.fp-type.selected.t-contrarian { background: var(--teal); border-color: var(--teal); }
+.fp-type.selected.t-idea { background: var(--green); border-color: var(--green); }
+.fp-type.selected.t-correction { background: var(--amber); border-color: var(--amber); }
+
+.fp-input {
+  font-family: var(--font-heading); font-size: 0.85rem;
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--light-gray); border-radius: 6px;
+  padding: 0.6rem 1rem; margin-bottom: 0.75rem;
+  color: var(--dark); background: white;
+  outline: none; transition: border-color 0.15s;
+}
+.fp-input:focus { border-color: var(--orange); }
+.fp-input::placeholder { color: var(--mid-gray); }
+
+.fp-field {
+  font-family: var(--font-body); font-size: 0.88rem;
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--light-gray); border-radius: 6px;
+  padding: 0.75rem 1rem; resize: vertical; min-height: 100px;
+  color: var(--dark); background: white;
+  line-height: 1.6; outline: none;
+  transition: border-color 0.15s;
+}
+.fp-field:focus { border-color: var(--orange); }
+.fp-field::placeholder { color: var(--mid-gray); }
+
+.fp-actions { display: flex; gap: 0.6rem; margin-top: 1rem; justify-content: flex-end; }
+.fp-cancel {
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600;
+  background: none; border: 1.5px solid var(--light-gray); border-radius: 6px;
+  padding: 0.5rem 1rem; cursor: pointer; color: var(--mid-gray);
+  transition: all 0.15s;
+}
+.fp-cancel:hover { border-color: var(--dark); color: var(--dark); }
+.fp-send {
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600;
+  background: var(--dark); color: var(--light);
+  border: none; border-radius: 6px;
+  padding: 0.5rem 1.2rem; cursor: pointer;
+  transition: background 0.15s;
+}
+.fp-send:hover { background: var(--orange); }
+.fp-send:disabled { background: var(--mid-gray); cursor: not-allowed; }
+
+.fp-success {
+  display: none; padding: 1.8rem 1.4rem;
+  text-align: center; font-family: var(--font-heading);
+}
+.fp-success h3 { font-size: 0.95rem; font-weight: 700; color: var(--dark); margin-bottom: 0.4rem; }
+.fp-success p { font-size: 0.78rem; color: var(--mid-gray); line-height: 1.5; }
+
+/* === FEEDBACK WALL === */
+.feedback-wall {
+  max-width: 780px; margin: 0 auto 4rem;
+  padding: 0 2rem;
+}
+.fw-header {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--complement); margin-bottom: 1.2rem;
+  padding: 0.25rem 0 0.25rem 0.7rem;
+  border-left: 3px solid var(--complement);
+}
+.fw-empty {
+  font-family: var(--font-heading); font-size: 0.82rem;
+  color: var(--mid-gray); font-style: italic;
+  padding: 1rem 0;
+}
+.fw-fragment {
+  background: #fffb2e;
+  border-left: 4px solid #c8a800;
+  border-radius: 0 6px 6px 0;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 0.9rem;
+  position: relative;
+}
+.fw-fragment-type {
+  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: #7a6200; margin-bottom: 0.25rem;
+}
+.fw-fragment-title {
+  font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem;
+  color: #1a1600; margin-bottom: 0.5rem; line-height: 1.3;
+}
+.fw-fragment-body {
+  font-family: var(--font-body); font-size: 0.88rem;
+  color: #2a2200; line-height: 1.65; margin-bottom: 0.75rem;
+}
+.fw-fragment-author {
+  font-family: var(--font-heading); font-size: 0.72rem;
+  color: #7a6200; display: flex; align-items: center; gap: 0.4rem;
+}
+.fw-fragment-author a { color: #7a6200; text-decoration: underline; text-underline-offset: 2px; }
+.fw-fragment-author a:hover { color: #1a1600; }
+.fw-fragment-date {
+  font-family: var(--font-heading); font-size: 0.65rem;
+  color: #a08800; margin-left: auto;
+}
+
+@media (max-width: 700px) {
+  .feedback-trigger { bottom: 1.2rem; right: 1.2rem; }
+  .feedback-overlay { padding: 1rem; align-items: flex-end; justify-content: center; }
+  .feedback-panel { max-width: 100%; }
+  .feedback-wall { padding: 0 1.2rem; }
+}
+
+/* ============================================================
+   ANTI-FLATTENING SECTION
+   ============================================================ */
+.antiflat-section {
+  background: var(--dark);
+  border-radius: 10px;
+  padding: 2.2rem 2rem 1.8rem;
+  margin-bottom: 4rem;
+  scroll-margin-top: 5rem;
+  border: 1.5px solid var(--orange);
+  box-shadow: 0 0 0 5px rgba(217,119,87,0.07), 0 6px 36px rgba(20,20,19,0.22);
+  position: relative;
+  overflow: hidden;
+}
+.antiflat-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--orange) 0%, #c4944a 55%, var(--complement) 100%);
+}
+.antiflat-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--orange); color: white;
+  font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  padding: 0.3rem 0.75rem; border-radius: 3px;
+  margin-bottom: 1rem;
+}
+.antiflat-section h2 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: 1.75rem; line-height: 1.15;
+  color: var(--orange); margin-bottom: 0.75rem;
+  letter-spacing: -0.01em; border-bottom: none; padding-bottom: 0;
+}
+.antiflat-subtitle {
+  font-family: var(--font-body);
+  font-size: 1.05rem; color: rgba(250,249,245,0.8);
+  line-height: 1.7; margin-bottom: 1.4rem;
+  border-bottom: 1px solid rgba(176,174,165,0.14);
+  padding-bottom: 1.3rem;
+}
+.antiflat-subtitle strong { color: rgba(250,249,245,0.96); font-weight: 600; }
+.antiflat-instruction {
+  background: rgba(217,119,87,0.11);
+  border-left: 3px solid var(--orange);
+  border-radius: 0 5px 5px 0;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.9rem; color: rgba(250,249,245,0.88);
+  line-height: 1.65; margin-bottom: 1.4rem;
+  font-family: var(--font-body);
+}
+.antiflat-instruction strong {
+  font-family: var(--font-heading); font-weight: 600; color: var(--orange);
+}
+.antiflat-instruction em { color: rgba(250,249,245,0.75); font-style: italic; }
+.antiflat-prompt-label {
+  font-family: var(--font-heading); font-weight: 600; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.13em; color: var(--mid-gray);
+  margin-bottom: 0.55rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.antiflat-prompt-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(176,174,165,0.14);
+}
+.antiflat-prompt-block {
+  background: rgba(0,0,0,0.42);
+  border: 1px solid rgba(217,119,87,0.28);
+  color: var(--light);
+  padding: 1.4rem 1.5rem; border-radius: 6px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.79rem; line-height: 1.82;
+  white-space: pre-wrap; word-break: break-word;
+  overflow-x: auto;
+}
+.antiflat-copy-row {
+  display: flex; justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+.antiflat-copy-btn {
+  font-family: var(--font-heading); font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--orange); background: transparent;
+  border: 1px solid rgba(217,119,87,0.4);
+  padding: 0.38rem 0.9rem; border-radius: 4px;
+  cursor: pointer; transition: all 0.2s;
+}
+.antiflat-copy-btn:hover { background: rgba(217,119,87,0.1); border-color: var(--orange); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span> NotebookLM: Taking Control of Outputs</div>
+    <div class="nav-links">
+      <a href="#antiflat" style="color:var(--orange);font-weight:700;">⚡ USE FIRST</a>
+      <a href="#engine">How It Works</a>
+      <a href="#failures">Failure Modes</a>
+      <a href="#inputs">Inputs</a>
+      <a href="#instructions">Instructions</a>
+      <a href="#studio">Studio</a>
+      <a href="#slides">Slides</a>
+      <a href="#gemini">NotebookLM + Gemini</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#extensions">Extensions</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-tag">NotebookLM Studio Guide</div>
+  <h1>Drive NotebookLM Studio to output nuanced, dense <em>artifacts to your specs</em></h1>
+  <p class="hero-sub">The March 2026 update shipped a full production studio. Which does not follow your instructions. Beautiful, useless outputs. This guide shows you how to control what comes out by controlling what goes in.</p>
+
+  <div class="hero-frontier">
+    <span class="hf-dot"></span>
+    <span><strong>Help evolving —</strong> This guide contains use cases and tips from users that may not yet be in official documentation. That's the frontier. Flag anything of interest. Ask for how-tos, updates, tips and tricks.</span>
+  </div>
+
+  <div class="hero-contact-row">
+    <span class="hero-contact-label">Leave your contact info to receive updates.</span>
+    <span class="hero-contact-sub">I hate selling that information as much as you do. And more.</span>
+  </div>
+
+  <div class="hero-meta">
+    <a href="https://www.linkedin.com/in/donato-mangialardo/" target="_blank" class="hero-li-link" title="Donato Mangialardo on LinkedIn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path d="M7.5 9.5V17H5V9.5H7.5ZM6.25 5.5C7.08 5.5 7.75 6.17 7.75 7C7.75 7.83 7.08 8.5 6.25 8.5C5.42 8.5 4.75 7.83 4.75 7C4.75 6.17 5.42 5.5 6.25 5.5ZM9.5 9.5H12V10.6C12.4 9.9 13.3 9.3 14.6 9.3C17.1 9.3 17.5 10.9 17.5 13V17H15V13.5C15 12.5 14.8 11.5 13.5 11.5C12.2 11.5 12 12.3 12 13.4V17H9.5V9.5Z" fill="white"/></svg><span class="hero-li-name">Donato Mangialardo</span></a>
+    <span class="hero-meta-sep">|</span>
+    <span class="hero-version">V2.1.03</span>
+    <span class="hero-meta-sep">|</span>
+    <span class="hero-update">April 1, 2026</span>
+    <span class="hero-meta-sep">|</span>
+    <span class="hero-changelog" title="Changelog coming soon">Changelog</span>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#antiflat" style="background:rgba(217,119,87,0.08);border-radius:5px;padding:0.5rem 0.75rem;border-left:3px solid var(--orange);margin-bottom:0.4rem;font-weight:700;color:var(--orange);"><span class="toc-tag" style="color:var(--orange);">⚡ Must-Do</span> USE THIS FIRST — Anti-Flattening Super Prompt</a>
+    <a href="#intro"><span class="toc-tag">Intro</span> A Studio That Ignores the Director</a>
+    <a href="#engine"><span class="toc-tag">01</span> How NotebookLM Thinks — And Why It Flattens Your Data</a>
+    <a href="#failures"><span class="toc-tag">02</span> Seven Named Failure Modes</a>
+    <a href="#inputs"><span class="toc-tag">03</span> Control Your Outputs by Engineering Your Inputs</a>
+    <a href="#instructions"><span class="toc-tag">04</span> Write Instructions the AI Cannot Ignore</a>
+    <a href="#studio"><span class="toc-tag">05</span> Format-by-Format Studio Controls</a>
+    <a href="#slides"><span class="toc-tag">06</span> Fix Slides After Generation (What Works, What Doesn't)</a>
+    <a href="#sharing"><span class="toc-tag">07</span> Share Notebooks, Save Knowledge, Build Iteratively</a>
+    <a href="#gemini"><span class="toc-tag">08</span> How NotebookLM + Gemini + Gems Create New Possibilities</a>
+    <a href="#workflow"><span class="toc-tag">Ref</span> The End-to-End Professional Workflow</a>
+    <a href="#limits"><span class="toc-tag">Ref</span> What NotebookLM Cannot Do</a>
+    <a href="#extensions"><span class="toc-tag">New</span> The NotebookLM Extension Ecosystem</a>
+  </div>
+
+  <!-- AUDIT LEGEND -->
+  <div class="audit-legend" onclick="this.classList.toggle('open')">
+    <div class="audit-legend-toggle">
+      <span>🔍 Every claim in this guide has been verified. Colored dots show the evidence level.</span>
+      <span class="al-arrow">▼</span>
+    </div>
+    <div class="audit-legend-body">
+      <div class="al-row"><span class="v v-g"></span> <span class="al-label">Google-verified — Confirmed in official docs or Google blog posts</span></div>
+      <div class="al-row"><span class="v v-c"></span> <span class="al-label">Community-tested — Multiple independent practitioners, passes logic</span></div>
+      <div class="al-row"><span class="v v-s"></span> <span class="al-label">Single-source — One source, needs re-check. Included because it passes logic</span></div>
+      <div class="al-row"><span class="v v-l"></span> <span class="al-label">Logic-derived — Follows mechanically from verified facts, no direct documentation</span></div>
+      <p class="al-note">All verifications are snapshots as of March 2026. Google performs silent model updates that can invalidate any behavior. Full audit table available on request.</p>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <section class="section" id="intro">
+    <div class="section-label">The Problem</div>
+    <h2>A Studio That Ignores the Director</h2>
+
+    <p><span class="v v-g"></span>The March 2026 update turned NotebookLM into something serious. Slide decks with actual design. Infographics that look hand-crafted. Audio overviews in four formats. Video overviews with cinematic animations. Data tables that export to Sheets. A full production studio, free (with daily generation limits), grounded in your sources.</p>
+
+    <p>There is one problem. The studio does not follow your instructions.</p>
+
+    <p>You write "focus on retention metrics and LTV/CAC ratios." The audio hosts spend eight minutes on general growth strategy and mention your metrics once, in passing. You ask for a slide deck on competitive positioning. You get ten slides of reworded Wikipedia. You configure the chat to act as a senior research analyst. It works for five exchanges, then quietly reverts to a generic assistant voice.</p>
+
+    <p>The slide revision feature — fix a single slide without regenerating the deck — is a coin flip. Sometimes it applies your edit precisely. Sometimes it ignores half your instruction and reformats a slide you did not touch.</p>
+
+    <div class="issues-card">
+      <div class="issues-card-header">
+        <span class="issues-card-title">⚠ Documented Community Issues</span>
+        <span class="issues-card-source">Source: <a href="https://www.reddit.com/r/notebooklm/" target="_blank">r/NotebookLM</a> · <a href="https://discuss.ai.google.dev" target="_blank">Google AI Forum</a></span>
+      </div>
+      <div class="issues-card-body">
+        <ul class="square-list">
+          <li><span class="v v-c"></span><strong>Instruction Decay:</strong> The AI follows your Configure Chat instructions initially, then progressively reverts to default behavior. More pronounced with many sources and long sessions.</li>
+          <li><span class="v v-s"></span><strong>Ghost Memory Bug:</strong> Deleted instructions persist in the system's behavior; newly saved instructions fail to register. The notebook "remembers" what you removed and "forgets" what you added.</li>
+          <li><span class="v v-c"></span><strong>Scaling Drowning:</strong> As sources approach the 500K-word limit, your instructions get drowned out by source volume. The instruction signal loses to the source noise.</li>
+          <li><span class="v v-c"></span><strong>Model Regression:</strong> In Feb 2026, a forced migration to Gemini 3.1 Pro broke grounding and retrieval for many users simultaneously. Quality drops can correlate with background model updates.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>None of this means the tool is useless. It means the tool is powerful but ungoverned. If you are a PM or PMM working with competitive analysis, customer research, or GTM strategy — where the distinction between "retention improved" and "retention improved in the enterprise segment but declined in mid-market" <em>is</em> the entire insight — defaults will cost you.</p>
+  </section>
+
+  <!-- ENGINE -->
+  <section class="section" id="engine">
+    <div class="section-label">01 — Under the Hood</div>
+    <h2>How NotebookLM Thinks — And Why It Flattens Your Data</h2>
+
+    <p>Understanding the machine is the prerequisite to controlling it. Every technique in this guide exploits a specific mechanical property of how NotebookLM processes your sources.</p>
+
+    <h3>The Engine: Source Grounding on Gemini</h3>
+
+    <p><span class="v v-g"></span>NotebookLM is powered by <strong>Gemini 3</strong> (Gemini 3 Flash for chat). Google's own team deliberately avoids calling it a traditional RAG system. Their preferred term is <strong>"source-grounded AI."</strong> The distinction matters.</p>
+
+    <p><span class="v v-c"></span>Traditional RAG systems aggressively chunk your documents into small segments, convert them into embeddings, store them in a vector database, and retrieve relevant chunks per query. NotebookLM can do this, but because Gemini has a massive context window <span class="v v-g"></span>(up to 2M tokens on Pro), it can ingest entire documents without aggressive chunking for smaller datasets. This preserves more structural and semantic context than traditional RAG.</p>
+
+    <h3>The Pipeline (Every Interaction)</h3>
+
+    <div class="pipeline">
+      <div class="pipeline-step">You ask a question<br><small style="color:var(--mid-gray)">(or request a Studio output)</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Retrieval<br><small style="color:var(--mid-gray)">Search sources for relevant segments</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Augmentation<br><small style="color:var(--mid-gray)">Inject retrieved segments + your instructions</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Grounded Generation<br><small style="color:var(--mid-gray)">Gemini produces response</small></div>
+    </div>
+
+    <h3>Three AI Systems, Not One</h3>
+
+    <p>Studio outputs are not produced by a single model. Three separate systems power the production studio:</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">The Three Engines</span>
+      <span class="v v-g"></span><strong>Gemini 3</strong> — all text generation: chat, reports, audio scripts, data tables.<br>
+      <span class="v v-g"></span><strong>Nano Banana Pro</strong> — visual generation: infographics, slide deck design.<br>
+      <span class="v v-g"></span><strong>Veo 3</strong> — video generation: video overviews, animations.<br><br>
+      <span class="v v-l"></span>When you generate a slide deck, Gemini writes the content, Nano Banana Pro creates the visual design, and the two must coordinate. Failures in that coordination explain why slide revision is unreliable — you are asking two different models to agree on a localized edit.
+    </div>
+  </section>
+
+  <!-- ANTI-FLATTENING -->
+  <section class="antiflat-section" id="antiflat">
+    <div class="antiflat-badge">⚡ Use This First — Always</div>
+    <h2>USE THIS FIRST, AT ALL TIMES</h2>
+    <p class="antiflat-subtitle">This super prompt will prevent the information flattening that happens when NotebookLM reads sources. <strong>Add it as a Pasted Text Source before anything else.</strong> Then add your sources and ask 2–3 key, fundamental questions that require very detailed responses.</p>
+
+    <div class="antiflat-instruction">
+      <strong>How to activate:</strong> In your notebook, click <strong>+ Add source → Copied text</strong>, paste the full prompt below, and name it <em>"ANTI-FLATTENING INSTRUCTIONS — Read First"</em>. Add this before uploading any other source. It will be the first thing NotebookLM reads.
+    </div>
+
+    <div class="antiflat-prompt-label">Anti-Flattening Prompt — Copy in full</div>
+    <div class="antiflat-prompt-block" id="antiflat-prompt-text">You are now operating in Deep Analysis Mode.
+
+Your single, non-negotiable rule is: Never flatten, simplify, generalize, or collapse nuances.
+
+Every single detail, subtlety, technical specificity, contextual caveat, trade-off, implicit assumption, and layered meaning present in the sources must be preserved and actively used in every output you produce.
+
+Explicit prohibitions (you will be judged on strict compliance):
+
+Do not summarize by removing qualifiers ("usually", "in most cases", "under these constraints", "with the following exceptions").
+
+Do not replace precise technical terms, acronyms, version numbers, chip names, performance metrics, or architectural details with generic phrases.
+
+Do not turn complex multi-layered explanations into "high-level overviews" or "key takeaways" that erase distinctions.
+
+Do not merge similar-but-not-identical concepts.
+
+Do not soften or omit constraints, long development cycles, regulatory requirements, manufacturing realities, or organizational responsibility aspects.
+
+Mandatory behavior:
+
+Quote or directly reference the exact wording or data from the sources whenever a nuance lives there.
+
+When explaining, keep all layers visible at once: the what, the why, the how, the constraints, the trade-offs, the historical context, and the implications for real-world deployment.
+
+If the sources contain contradictions, ambiguities, or evolving design decisions, surface them explicitly instead of resolving them into a single clean story.
+
+In every response (whether written summary, podcast script, study guide, timeline, comparison table, or FAQ), explicitly call out and utilize every relevant nuance from the uploaded material.
+
+When generating audio (podcast), speak in the same level of technical depth as the sources — do not "make it accessible" by flattening. Use the full vocabulary and keep the complexity intact.
+
+If you ever feel tempted to simplify for clarity, stop and instead add an extra sentence that preserves the original nuance.
+
+Activation trigger:
+
+This instruction applies to every single query in this notebook from now on, until I explicitly tell you to switch back to normal mode.
+
+You must begin every response with the internal thought: "Deep Analysis Mode — preserving all nuances".
+
+You are now in Deep Analysis Mode.
+
+Begin.</div>
+
+    <div class="antiflat-copy-row">
+      <button class="antiflat-copy-btn" onclick="copyAntiFlat(this)">Copy Prompt</button>
+    </div>
+  </section>
+
+  <!-- FAILURES -->
+  <section class="section" id="failures">
+    <div class="section-label sl-complement">02 — Know What Breaks</div>
+    <h2>Seven Named Failure Modes</h2>
+
+    <p>Every frustration you have experienced with NotebookLM maps to one of these.</p>
+
+    <div class="failure-grid">
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">1</span> Contextual Averaging <span class="v v-c"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">When sources lack structural signaling (clear headings, Markdown tables, explicit delimiters), the system defaults to <em>averaging</em> across them. Selecting 40 sources biases output toward the most frequent (most generic) patterns. Your "LTV:CAC ratio of 3.2:1 in enterprise" becomes "strong unit economics." This is not an immutable machine flaw — it is the default behavior when you feed the AI unstructured content. High-contrast formatting in your sources can anchor the model's attention on specific data points.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">2</span> Instruction Decay <span class="v v-c"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">Configure Chat instructions influence the first few exchanges reliably, then fade. The system's attention progressively shifts from your instructions to the accumulated conversation context and source volume. After several exchanges, your "act as a senior research analyst" instruction is competing with thousands of tokens of prior conversation — and losing.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">3</span> The Attention Budget <span class="v v-l"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">Every token spent on persona, tone, or style is a token NOT spent on your actual data. This is zero-sum — a property of how transformer attention works. "Be conversational and engaging" directly competes with "preserve exact metrics from sources." You cannot have both at full strength. A "be funny" instruction actively steals attention from your facts.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">4</span> Lost in the Middle <span class="v v-g"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">Documented property of LLMs (Liu et al., 2023): content positioned in the middle of a long context gets attended to less accurately than content at the beginning or end. If you have 50 sources, positions 15–35 are effectively less visible to the model. Specific applicability to NotebookLM depends on whether it uses chunked retrieval or full-context ingestion for your dataset size.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">5</span> Retrieval Failure <span class="v v-g"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">The system surfaces chunks based on semantic similarity to your query. If your query uses different language than your source — you ask about "customer acquisition cost" but your source only says "CAC" — retrieval may miss it. The model generates without it, producing a response that ignores data you know exists.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">6</span> Bounding-Box Compression <span class="v v-s"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">Slides are 16:9 fixed. Infographics have rendering constraints. When content exceeds the visual container, the AI truncates to fit the CSS layout. This is a <em>visual</em> compression failure distinct from semantic compression in text. You are not getting a bad summary — you are getting a good summary that was physically truncated by the rendering engine.</div>
+      </div>
+
+      <div class="failure-card" onclick="this.classList.toggle('open')">
+        <div class="fc-header"><span class="fc-num">7</span> Ghost Memory / Persistence Bugs <span class="v v-s"></span> <span class="fc-arrow">▼</span></div>
+        <div class="fc-body">Community-reported: deleted instructions sometimes persist while newly saved instructions fail to register. The notebook "remembers" what you removed and "forgets" what you added. No reliable workaround exists except creating a new notebook and migrating your sources. Mechanism unconfirmed — may be session caching rather than a persistent bug.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INPUTS -->
+  <section class="section" id="inputs">
+    <div class="section-label">03 — The Core Principle</div>
+    <h2>Control Your Outputs by Engineering Your Inputs</h2>
+
+    <p>This is the single idea behind every technique in this guide. NotebookLM's output quality is a function of three things: <strong>what sources you give it</strong>, <strong>how you structure those sources</strong>, and <strong>which sources you select for each task</strong>. No prompt in the Configure Chat field can recover nuance that was lost during source preparation.</p>
+
+    <h3>The Selective Context Strategy</h3>
+
+    <p><span class="v v-c"></span>Stop selecting all your sources. Select 3–5 maximum per query or studio output. Uncheck everything else. Fewer sources means the retrieval step surfaces a higher percentage of each source. You get specific metrics instead of safe generalizations.</p>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">The Tradeoff</span>
+      If a critical detail exists only in a source you did not select, it will not appear. You are optimizing for depth at the cost of coverage. Manage this by running <strong>multiple passes with different source selections</strong> rather than one pass with everything.
+    </div>
+
+    <div class="callout callout-blue">
+      <span class="callout-label">Example — Competitive Analysis</span>
+      12 competitor sources. Instead of selecting all 12:<br>
+      <strong>Pass 1:</strong> Select Competitor A + B → "Compare pricing and contract structure"<br>
+      <strong>Pass 2:</strong> Select Competitor C + D → same query<br>
+      <strong>Pass 3:</strong> Select the 4 with most differentiated positioning → "Identify gaps"<br>
+      Each pass produces dense output. You synthesize across passes.
+    </div>
+
+    <h3>The Staging Note Technique</h3>
+
+    <p><span class="v v-c"></span>Create a note titled <code>!!! STAGING_NOTE</code>. Paste the specific metrics, quotes, or data points that must appear in your output. Select <strong>only</strong> this note before generating. This eliminates retrieval failure for critical data — the model cannot miss what you hand-fed it.</p>
+
+    <h3>Pre-Process Through Claude Before Uploading</h3>
+
+    <p><span class="v v-s"></span>Before uploading a complex source, run it through Claude with an extraction prompt:</p>
+
+    <div class="prompt-block">"From this document, extract: (1) every quantified claim with exact numbers, (2) every caveat or qualification, (3) every methodology limitation, (4) every instance of uncertainty. Structure each as a separate item."</div>
+
+    <p>Save as a Google Doc. Upload alongside the original. You now have two versions: the original (complete) and a structured extraction (retrieval-optimized).</p>
+
+    <h3>The Architecture of Granular Itemization</h3>
+
+    <p><span class="v v-c"></span>NotebookLM retrieves in chunks. If your source is dense continuous prose, retrieval surfaces a blend of signals — and the model averages them. If your source is structured into discrete labeled items, retrieval can surface individual precision points. This is the core principle behind granular itemization: structure your source content so that each distinct claim, qualifier, mechanism, evidence point, and constraint occupies its own retrievable item.</p>
+
+    <p>The most common failure pattern is the "compacted paragraph" — where a nuanced finding with three conditions and two exceptions is compressed into two sentences. Retrieval surfaces those two sentences and loses the conditions and exceptions entirely.</p>
+
+    <div class="callout callout-teal" style="margin: 1.5rem 0;">
+      <span class="callout-label">The 5-Layer Item Architecture</span>
+      For each significant claim in your source, structure it across five layers before uploading:
+      <br><br>
+      <strong>Layer 1 — Base Claim:</strong> The core assertion in one sentence.<br>
+      <strong>Layer 2 — Qualifier:</strong> When this is true / under what conditions / for which segment.<br>
+      <strong>Layer 3 — Mechanism:</strong> Why or how it works — not just what.<br>
+      <strong>Layer 4 — Evidence:</strong> The specific data, study, or source supporting it — with the number, not a paraphrase.<br>
+      <strong>Layer 5 — Constraint:</strong> What this claim does NOT apply to. Where it breaks down.
+    </div>
+
+    <p>Each layer becomes a separate numbered item in your source document. When retrieval surfaces Layer 2 (the qualifier), it does not also retrieve Layer 5 (the constraint) in the same chunk. This means you may need to run multiple passes — or use the Staging Note to bring all five layers into the same generation window when they are all critical to the output.</p>
+
+    <div class="callout callout-amber" style="margin: 1.5rem 0;">
+      <span class="callout-label">What to Itemize vs. What to Leave as Prose</span>
+      <strong>Itemize:</strong> quantified findings, conditional claims, framework categories, segmentation distinctions, methodology limitations, explicit exceptions.<br><br>
+      <strong>Leave as prose:</strong> narrative context, background, general explanation unlikely to be retrieved in isolation. Prose supports itemized facts — it does not replace them.
+    </div>
+
+    <h3>Three Source-Vetting Prompts (Run First, Every Time)</h3>
+
+    <p><span class="v v-s"></span>Run in Chat. Save each as a note. Delete chat history between runs.</p>
+
+    <div class="prompt-block"><strong>Prompt 1 — Contradictions:</strong>
+"Looking only at the sources in this notebook, identify areas where sources disagree. Flag clear contradictions or conflicting claims."
+
+<strong>Prompt 2 — Gaps:</strong>
+"What important questions about [topic] are missing or barely covered? List the biggest gaps. Do not invent details."
+
+<strong>Prompt 3 — Blind Spots:</strong>
+"Are there contrarian or lesser-known viewpoints not represented? Describe them and suggest what sources I'd need."</div>
+
+    <p>Contradictions are signal, not noise. They tell you where nuance lives — and what the studio is most likely to flatten.</p>
+
+    <h3>The Definitions Source</h3>
+
+    <p><span class="v v-s"></span>Create a Google Doc: "Definitions and Framework." Include every term with a specific meaning in your context, your framework categories, and explicit disambiguation (e.g., "GTM = go-to-market execution, not Google Tag Manager"). Upload as a source. It acts as a persistent glossary grounding responses in your vocabulary.</p>
+
+    <h3>Multimodal Source Mixing</h3>
+
+    <p><span class="v v-g"></span>NotebookLM ingests YouTube transcripts, audio files, Docs, Sheets, Slides, and images. Mixing source types produces richer output than uniform inputs. Upload a competitor CEO's podcast interview (YouTube URL) alongside their investor presentation (PDF) and their pricing page (URL). Ask NotebookLM to compare what the CEO says vs. what the data shows. The collision surfaces insights neither source produces alone.</p>
+  </section>
+
+  <!-- INSTRUCTIONS -->
+  <section class="section" id="instructions">
+    <div class="section-label sl-complement">04 — Instruction Durability</div>
+    <h2>Write Instructions the AI Cannot Ignore</h2>
+
+    <p><span class="v v-g"></span>The Configure Chat field supports 10,000 characters. Most people leave it empty. This is the most underused lever in NotebookLM.</p>
+
+    <h3>Two Roles, Two Pipeline Stages: The Governor and the Engine</h3>
+
+    <p><span class="v v-c"></span>The Anti-Flattening Prompt and the Staging Note are not alternatives to each other. They operate at different stages of NotebookLM's internal pipeline and solve different problems. Confusing them — or using only one — is the most common advanced-user mistake.</p>
+
+    <table class="compare-table" style="margin: 1rem 0 1.5rem;">
+      <thead><tr><th>Instrument</th><th>Pipeline Stage</th><th>What It Controls</th><th>Without It</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Anti-Flattening Prompt</strong></td>
+          <td>Grounded Generation</td>
+          <td>HOW the model constructs output — what to preserve, what not to flatten, how to handle contradictions and caveats</td>
+          <td>Output is clean, simplified, and averaged — nuance is erased at the construction stage</td>
+        </tr>
+        <tr>
+          <td><strong>Staging Note</strong> (<code>!!! STAGING_NOTE</code>)</td>
+          <td>Retrieval</td>
+          <td>WHAT content enters the generation window — hands the model the exact data points that must appear</td>
+          <td>Critical metrics and quotes may never enter the generation window — retrieval misses them upstream</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Think of it this way: the <strong>Staging Note is the Engine</strong> — it loads the fuel (the precise content you need). The <strong>Anti-Flattening Prompt is the Governor</strong> — it controls how that fuel is processed. A perfect Governor with no Engine produces a disciplined output from the wrong content. A powerful Engine with no Governor produces content-accurate but flattened output. You need both operating simultaneously.</p>
+
+    <div class="callout callout-teal" style="margin: 1.5rem 0;">
+      <span class="callout-label">The Load-Bearing Singleton</span>
+      A <strong>load-bearing singleton</strong> is any note you select in isolation — one note, no other sources — so it must carry all critical context on its own. Two types serve different purposes:<br><br>
+      <strong>MASTER INSTRUCTIONS</strong> (instruction singleton): Select alongside your sources to ensure your behavioral rules persist beyond session decay. Where Configure Chat instructions fade, this note stays retrievable.<br><br>
+      <strong>!!! STAGING_NOTE</strong> (data singleton): Select alongside your sources when specific data points must enter the generation window. The <code>!!!</code> prefix sorts it first alphabetically, increasing retrieval priority when the model scans available notes.
+    </div>
+
+    <h3>Write It Like a Job Brief</h3>
+
+    <div class="prompt-block">ROLE: Senior B2B Research Analyst specializing in [domain].
+
+GOAL: Extract actionable competitive intelligence. Every output must contain specific metrics, not generalizations.
+
+SOURCE HANDLING:
+- Include caveats/limitations whenever referencing a claim
+- Never state a finding without its conditions
+- Surface contradictions explicitly — do not resolve silently
+- Preserve original terminology. No synonym substitution
+
+BANNED: "It's worth noting" / "Interestingly" / "Several competitors" (name them)
+
+FORMAT: Finding first, then evidence, then limitation. Every metric names its source.
+
+DECAY PREVENTION: End every response with a one-sentence reminder of your Role and Goal.</div>
+
+    <h3>The Attention Budget Rule</h3>
+
+    <p><span class="v v-l"></span>Minimize persona and tone instructions. Maximize source handling and output format rules. If you must choose between "sound friendly" and "preserve all methodology limitations," choose the second. Persona competes with data for the same attention — the less you spend on tone, the more the model spends on your facts.</p>
+
+    <h3>The Load-Bearing Singleton</h3>
+
+    <p><span class="v v-c"></span>When instruction decay kicks in (after several exchanges), Configure Chat has no way to reassert itself. But a <strong>source can be re-read</strong>.</p>
+
+    <p><span class="v v-c"></span>Create a Note titled <code>MASTER INSTRUCTIONS</code> containing your full prompt. Select it alongside sources. It functions as a retrieval-accessible backup of your instructions. When the model's attention drifts, it can still retrieve your intent from this note.</p>
+
+    <h3>Fresh Sessions for Fresh Questions</h3>
+
+    <p><span class="v v-g"></span>Chat history shapes subsequent responses. 15 messages about pricing contaminates your next question about segmentation. Click <strong>"Delete Chat History"</strong> before starting a new line of inquiry. Save valuable exchanges as notes first — the note preserves the insight; clearing history removes the framing bias.</p>
+  </section>
+
+  <!-- STUDIO -->
+  <section class="section" id="studio">
+    <div class="section-label">05 — Format-by-Format Studio Controls</div>
+    <h2>Tune Each Studio Output Separately</h2>
+
+    <p>Each studio format uses a different combination of AI models, has different failure profiles, and responds to different instruction patterns. Treating them all the same is why most people get generic results.</p>
+
+    <p>But before any of that matters, you need to know where the controls actually are.</p>
+
+    <h3>The #1 Mistake: Clicking the Tile Instead of the Pencil</h3>
+
+    <p>Every studio output tile has <strong>two click targets</strong>. Most people only discover one.</p>
+
+    <div class="callout callout-orange">
+      <span class="callout-label">Two Clicks, Two Outcomes</span>
+      <span class="v v-g"></span><strong>Click the tile itself</strong> → generates immediately with default settings. No customization. This is what 90% of users do.<br><br>
+      <span class="v v-g"></span><strong>Click the pencil icon (✏️) next to the tile</strong> → opens a customization panel with format-specific options AND a free-text prompt field. This is where you write instructions — but it is not the only thing the model listens to. Source content competes with your pencil instructions for the same attention weight. The more source tokens selected, the more diluted your instructions become. This is why source selection matters even for Studio outputs — fewer sources = more weight on your instructions.
+    </div>
+
+    <h3>Auto-Suggestions: Useful as Diagnostics, Dangerous as Prompts</h3>
+
+    <p>When you click the pencil icon, NotebookLM shows "Loading suggestions..." then generates <strong>dynamic topic and theme suggestions</strong> based on your sources. Upload scientific papers → it suggests "white paper," "glossary of key terms." Upload competitor docs → it suggests comparison tables, positioning analyses.</p>
+
+    <p>They look helpful. They are not your prompt. Three problems:</p>
+
+    <p><span class="v v-s"></span><strong>1. Presented as a flat list without grouping by intent.</strong> Analysis, presentation, and summary options sit side by side with no guidance on which serves what purpose.</p>
+
+    <p><strong>2. They optimize for breadth, not your goal.</strong> Suggestions reflect what is statistically prominent in your sources — not what you need. Same contextual averaging problem from Failure Mode #1, applied to prompt selection.</p>
+
+    <p><strong>3. They consume your instruction budget.</strong> Pick a suggestion, it fills the prompt field. Many users pick one, hit generate, and wonder why the output is generic. A generic prompt produces generic output.</p>
+
+    <p><strong>How to use them:</strong> Treat auto-suggestions as a source-content diagnostic. They show you what NotebookLM detected as primary themes. Use that to write your own prompt. Never use a suggestion as-is.</p>
+
+    <h3>View Custom Prompt: Your Iteration Superpower</h3>
+
+    <p><span class="v v-g"></span>After generating any studio output, click the <strong>three-dot menu (⋮) next to the output title → "View custom prompt."</strong> This shows you the exact prompt that produced that output.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Why This Changes Everything</span>
+      <strong>When output is good:</strong> capture the prompt and reuse it on future notebooks. You now have a tested template.<br>
+      <strong>When output is bad:</strong> diagnose whether the issue was your prompt or the model's interpretation.<br>
+      <strong>When you used an auto-suggestion:</strong> see how NotebookLM expanded it internally. The system prompt is more structured than what you typed — studying it teaches you the structure the engine responds to best.
+    </div>
+
+    <p><strong>Limitation:</strong> You see what you asked for, but not the full system prompt that wraps it. Partial transparency — better than nothing, not complete.</p>
+
+    <h3>Reference: Customization Options by Format</h3>
+
+    <table class="compare-table">
+      <thead><tr><th>Format</th><th>Fixed Options</th><th>Free-Text Prompt</th><th>What Your Prompt Should Specify</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Audio</strong></td><td>Format, Language, Length</td><td>"What should the AI hosts focus on?"</td><td>Topic focus, contradiction handling, host roles, banter caps</td></tr>
+        <tr><td><strong>Video</strong></td><td>Format, Language, Visual Style</td><td>Steering prompt</td><td>Focus areas, audience level, which sources to prioritize</td></tr>
+        <tr><td><strong>Slides</strong></td><td>Format, Length, Language</td><td>Outline / guidance</td><td>Per-slide structure, visual style with hex codes, audience</td></tr>
+        <tr><td><strong>Infographic</strong></td><td>Orientation, Detail level, Style preset</td><td>Description box</td><td>Topic, visual style text or Gemini-extracted CSS</td></tr>
+        <tr><td><strong>Report</strong></td><td>Format, Language</td><td>Full custom prompt</td><td>Structure, style, tone, emphasis, terminology rules</td></tr>
+        <tr><td><strong>Data Table</strong></td><td>None</td><td>"Describe the table"</td><td>Exact columns, comparison dimensions, detail level</td></tr>
+        <tr><td><strong>Flashcards</strong></td><td>Count, Difficulty</td><td>Topic focus</td><td>Concepts, terminology depth</td></tr>
+        <tr><td><strong>Quiz</strong></td><td>Count, Difficulty</td><td>Topic focus</td><td>What to test, complexity, focus areas</td></tr>
+      </tbody>
+    </table>
+
+    <hr style="border:none;border-top:2px solid var(--light-gray);margin:2.5rem 0;">
+
+    <h3>Audio Overviews</h3>
+
+    <p>The Customize field is your editorial brief. Write it like you are briefing a podcast producer.</p>
+
+    <div class="prompt-block"><strong>Professional instruction example:</strong>
+"This episode covers customer retention from three sources.
+Constraint 1: Open with the contradiction between Source A (improving) and Source B (declining in enterprise). Name it explicitly.
+Constraint 2: 60%+ of the episode on methodology differences — sample size, time window, retention definition.
+Constraint 3: Host 1 is conversational. Host 2 must quote specific numbers. Banter ≤10% of output.
+Constraint 4: Close with what a product team needs to validate before acting."</div>
+
+    <table class="compare-table">
+      <thead><tr><th>Format</th><th>Best For</th><th>Failure Mode</th><th>Counter</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Deep Dive</strong></td><td>Multi-source synthesis</td><td>Hosts agree too readily, smooth over disagreements</td><td>Explicit contradiction instructions</td></tr>
+        <tr><td><strong>Critique</strong></td><td>Stress-testing your drafts — automated red team</td><td>Stays surface-level</td><td>Name the specific assumptions to attack</td></tr>
+        <tr><td><strong>Debate</strong></td><td>Genuinely two-sided questions</td><td>False balance when evidence is asymmetric</td><td>Specify which position has stronger evidence</td></tr>
+        <tr><td><strong>Brief</strong></td><td>Executive headline-only, under 2 min</td><td>Extreme compression</td><td>Only use when you genuinely want headlines only</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Interactive Mode:</strong> Let hosts run 2–3 minutes, then interrupt with a specific question. Your interrupt triggers a fresh retrieval pass, often surfacing chunks the original arc skipped.</p>
+
+    <p><span class="v v-c"></span><strong>Length control:</strong> Shorter (~5 min), Default (~10 min), Longer (~20 min). If none fit: generate a summary at desired density via Claude, upload that, generate audio from it with a time constraint.</p>
+
+    <p><strong>Audio gets monotonous fast.</strong> Without custom prompts, every Deep Dive follows the same arc. Ten episodes, ten identical structures regardless of topic. The prompt field is the fix — without it, you are generating the same show every time.</p>
+
+    <h3>Audio Prompt Templates</h3>
+
+    <p>The format table above tells you which format to choose. These three templates tell you exactly what to put in the Customize field — or in the case of the Master Prompt, how to make a permanent standing instruction that shapes every audio output in a notebook. Use them as-is or adapt them to your sources.</p>
+
+    <!-- ── TEMPLATE 1: AUDIO MASTER INSTRUCTIONS ── -->
+    <h4>Template 1 — The Audio Master Prompt (Standing Constitution)</h4>
+
+    <p><span class="v v-g"></span>This is not an episode prompt. It is a <strong>permanent behavioral constitution</strong> for audio in any notebook where source fidelity matters. Upload it as a <strong>source</strong> (not pasted in Customize), then select it alongside your actual sources when generating audio. It governs how the hosts behave across all future outputs in that notebook.</p>
+
+    <table class="compare-table" style="margin: 1rem 0 1.2rem;">
+      <thead><tr><th>Without it</th><th>With it</th></tr></thead>
+      <tbody>
+        <tr><td>Generic "podcast about the topic"</td><td>Analytical walkthrough of the source</td></tr>
+        <tr><td>Smooth, friendly, simplified</td><td>Denser, more precise, more structured</td></tr>
+        <tr><td>"Here are the key takeaways"</td><td>"Here is the argument, its caveats, its mechanism, and its limits"</td></tr>
+        <tr><td>Hosts agree too much</td><td>Host 2 interrupts to preserve friction and nuance</td></tr>
+        <tr><td>Single source sounds like consensus</td><td>Single source treated as one source — "this source argues…"</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>How to deploy:</strong> Click <strong>+ Add source → Copied text</strong>. Paste the full prompt below. Name the source <em>"AUDIO_MASTER_INSTRUCTIONS"</em>. When generating audio, select both your actual source and this instruction source. Do <em>not</em> rely on Configure Chat — it fades. This stays.</p>
+
+    <div class="prompt-block"><span class="v v-s"></span>You are producing dense, source-faithful NotebookLM audio based on the selected sources.
+
+NON-NEGOTIABLE OBJECTIVE
+The audio must preserve the source's real intellectual structure.
+Do not flatten, simplify, over-generalize, motivationalize, or turn the source into generic "key takeaways."
+The goal is not accessibility through simplification.
+The goal is clarity through structure while preserving nuance.
+
+SOURCE FIDELITY RULES
+1. Preserve the source's terminology. Do not replace precise terms, category names, acronyms, product names, metrics, frameworks, or technical distinctions with generic synonyms.
+2. Preserve qualifiers. Do not remove: usually / in most cases / under these conditions / except when / only if / depending on / early-stage vs. growth-stage vs. enterprise / pre-PMF vs. post-PMF / emerging vs. mature vs. untested vs. validated.
+3. Preserve distinctions. Do not merge similar-but-not-identical concepts. Keep distinctions such as: PMF vs. GTM fit / ICP vs. persona / user vs. buyer vs. champion vs. economic buyer / positioning vs. messaging / demand creation vs. demand capture / product value vs. perceived value / signal vs. noise / strategy vs. execution / research finding vs. interpretation.
+4. Preserve caveats, constraints, and trade-offs. If the source says something works only under specific constraints, the audio must say so.
+5. Preserve uncertainty. If the source is tentative, exploratory, incomplete, contradictory, or based on limited evidence, the audio must not present it as settled truth.
+6. Preserve contradictions. If the source contains tension, disagreement, or ambiguity, surface it explicitly. Do not resolve it into a clean story unless the source itself resolves it.
+7. Preserve source boundaries. When there is only one source, do not invent consensus. Say: "This source argues…" / "The author's position is…" / "The source implies…" / "The source does not fully answer…". When there are multiple sources, distinguish where they agree, where they diverge, where they use different definitions, and where one is broader, narrower, more operational, or more speculative.
+
+AUDIO STYLE RULES
+1. Dense but listenable. Articulated and structured — not casual filler.
+2. No generic podcast banter. Avoid: "Wow, that's fascinating" / "That's such a great point" / "Let's dive in" / "There's a lot to unpack" / empty agreement between hosts.
+3. Host roles. Host 1: Structure and synthesis — explains the argument, sequence, mechanism, and implications. Host 2: Precision and fidelity — interrupts to preserve caveats, exact terms, distinctions, limits, contradictions, and source-specific wording.
+4. Do not make it "beginner-friendly" by removing complexity. If a concept is complex, explain the structure more carefully — do not delete the nuance.
+5. Use source wording when nuance depends on wording. Quote or closely reference exact source language when: a term is defined in a specific way / a distinction could be misunderstood / a claim depends on a caveat / a contradiction hinges on wording.
+6. Maintain layered explanation. For each major idea, include as many layers as the source supports: what the source says / why it matters / what conditions it depends on / what it is NOT saying / what it changes in practice / what a founder, PM, PMM, or operator would need to verify before acting.
+7. Do not over-compress. If the source contains a dense argument, spend time reconstructing the logic instead of jumping to takeaways.
+
+DEFAULT AUDIO STRUCTURE
+1. Opening frame — state the central question or tension in the source. Do not start with generic background.
+2. Source map — explain what kind of source this is (article / transcript / strategy memo / customer research / analyst report / product document / positioning material / technical document / interview / internal notes) and whether it is making an argument, reporting evidence, proposing a framework, describing a system, or documenting a process.
+3. Core argument — reconstruct the source's main argument step by step.
+4. Key distinctions — surface the distinctions the source depends on. Do not merge them.
+5. Mechanism — explain how the thing works, not just what the source claims.
+6. Caveats and constraints — state what must be true for the claim to hold.
+7. Contradictions, tensions, or open questions — name unresolved issues explicitly.
+8. Practical implications — translate implications carefully, without exceeding the source.
+9. What not to infer — close by saying what the source does not prove, does not cover, or should not be overextended to mean.
+
+BANNED OUTPUT PATTERNS
+Do not produce: a generic summary / a motivational business podcast / a simplified explainer / a "top 5 takeaways" episode unless explicitly requested / fake consensus from a single source / smooth agreement between hosts when the source contains tension / generic business language not grounded in the source / invented examples unless explicitly marked as illustrative.
+
+QUALITY STANDARD
+A strong output should feel like two expert analysts walking through the source with discipline. A listener should be able to reconstruct: the source's core argument / the key distinctions / the caveats / the tensions / the practical implications / the limits of what the source supports.
+If forced to choose between entertaining and faithful: choose fidelity.
+If forced to choose between concise and preserving a load-bearing nuance: preserve the nuance.</div>
+
+    <!-- ── TEMPLATE 2: AUDIO STUDIO CUSTOM PROMPT ── -->
+    <h4>Template 2 — Deep Dive Custom Prompt (Per-Session Quick-Deploy)</h4>
+
+    <p><span class="v v-g"></span>Use this when you want a dense, source-faithful Deep Dive for a specific session. Paste it directly into the <strong>Customize field</strong> (pencil icon ✏️). Shorter than the Master Prompt — designed to be pasted fresh each time rather than kept as a standing instruction.</p>
+
+    <div class="prompt-block"><span class="v v-s"></span>Create a dense, source-faithful Deep Dive audio using the selected source(s) only.
+
+The goal is not a generic overview. The goal is to reconstruct the source's argument, distinctions, caveats, constraints, tensions, and practical implications with high fidelity.
+
+Host roles:
+- Host 1: structure the argument and explain the sequence of ideas.
+- Host 2: preserve precision, caveats, terminology, contradictions, and limits. Host 2 should interrupt when the discussion becomes too generic.
+
+Banter limit: maximum 5%. No generic podcast filler.
+
+Do not simplify by deleting nuance. If something is complex, explain the structure more carefully.
+
+Preserve exact terms from the source. Do not replace domain-specific language with generic synonyms.
+
+If there is only one source, do not imply consensus. Say "this source argues," "the author claims," or "the source suggests."
+
+If there are multiple sources, explicitly separate:
+- where they agree
+- where they diverge
+- where they define terms differently
+- where one source is more operational, strategic, technical, narrow, broad, speculative, or evidence-based
+
+Required episode structure:
+1. Open with the central tension or question in the source.
+2. Map what kind of source this is and what it is trying to do.
+3. Reconstruct the core argument step by step.
+4. Surface the key distinctions the source depends on.
+5. Explain the mechanisms, not just the claims.
+6. Preserve caveats, constraints, and trade-offs.
+7. Name contradictions, ambiguities, or open questions.
+8. Explain practical implications where relevant.
+9. Close with "what not to infer" from the source.
+
+Do not produce a lightweight summary, a motivational business podcast, or generic key takeaways.</div>
+
+    <!-- ── TEMPLATE 3: AUDIO CRITIQUE PROMPT ── -->
+    <h4>Template 3 — Critique Mode Prompt (Stress-Test a Source)</h4>
+
+    <p><span class="v v-g"></span>Use this when you want NotebookLM to <strong>stress-test</strong> a source, draft, strategy, or thesis — not summarize it. Select the <strong>Critique</strong> format in the format toggle, then paste this in the Customize field. Host 1 reconstructs the argument fairly before Host 2 attacks it. Produces an automated red-team of your material.</p>
+
+    <div class="prompt-block"><span class="v v-s"></span>The goal is to stress-test the selected source, not summarize it.
+
+Host 1 reconstructs the source's argument fairly before criticizing it.
+Host 2 identifies assumptions, missing evidence, weak definitions, overgeneralizations, contradictions, and unsupported leaps.
+
+Rules:
+- Do not attack straw men. Reconstruct the argument fairly before criticizing it.
+- Do not introduce outside claims unless clearly marked as external reasoning.
+- Separate what the source proves from what it merely asserts.
+- Identify where claims depend on stage, market, ICP, buyer maturity, channel, category, or company capabilities.
+- Preserve useful insights even when criticizing weak parts.
+
+Required structure:
+1. Fair reconstruction of the source's thesis.
+2. Strongest parts of the argument.
+3. Load-bearing assumptions — the claims the argument depends on that are not themselves proven.
+4. Weak or under-supported claims.
+5. Missing distinctions.
+6. Contradictions or unresolved tensions.
+7. What would need to be verified before acting on it.
+8. Final judgment: reliable / partially reliable / speculative / under-evidenced.</div>
+
+    <div class="callout callout-amber" style="margin: 1.5rem 0;">
+      <span class="callout-label">Which Template to Use When</span>
+      <strong>Audio Master Prompt:</strong> Upload as a source in any notebook where you consistently need fidelity. One-time setup per notebook.<br><br>
+      <strong>Deep Dive Custom Prompt:</strong> Paste in Customize for any specific session where you want a dense analytical walkthrough. Best for single dense sources (strategy docs, research papers, customer data).<br><br>
+      <strong>Critique Mode Prompt:</strong> Use with the Critique format toggle when stress-testing a draft, strategy, or thesis you have authored. Best internal red-team for anything you plan to present to stakeholders.
+    </div>
+
+    <h3>Video Overviews</h3>
+
+    <p><span class="v v-g"></span>Three formats: <strong>Cinematic</strong> (immersive, Ultra only, English only), <strong>Explainer</strong> (structured, connects dots), <strong>Brief</strong> (bite-sized). Powered by Veo 3 for visuals + Gemini for narration.</p>
+
+    <div class="callout callout-blue">
+      <span class="callout-label">Visual Styles</span>
+      Built-in: Classic, Whiteboard, Heritage, Paper-craft, Watercolor, Anime, Retro Print, Kawaii — plus <strong>Custom</strong> (describe style in text). Style-stealing trick works here too. Desktop/web only — not on mobile.
+    </div>
+
+    <p><strong>Steering prompt for PMs:</strong> "Focus only on the competitive positioning gaps across these three sources. Audience: VP of Product. Executive-level — no introductory context." The steering prompt prevents a 7-minute video from spending 3 minutes on context you already know.</p>
+
+    <h3>Slide Decks</h3>
+
+    <p><strong>Detailed</strong> (full text, standalone) or <strong>Presenter</strong> (clean visuals, talking points). Both use Nano Banana Pro for rendering.</p>
+
+    <h4>The Slide Prompt That Actually Works</h4>
+
+    <p>Vague prompts like "make a professional deck about our competitive landscape" produce generic output. Prompts that consistently generate usable slides follow a <strong>per-slide structure</strong>:</p>
+
+    <div class="prompt-block"><strong>Tested slide prompt template:</strong>
+Title: "[Presentation Title]"
+Audience: [who, expertise level]
+
+For each slide:
+- Slide Title: Catchy, relevant to audience
+- Visual: Specific image/diagram/chart instructions
+- On-Screen Text: Max 3–5 bullet points. Keywords only, not sentences
+- Design: [dark mode / minimalist / futuristic]
+- Colors: [hex codes, e.g., "#141413 bg, #d97757 accents"]
+
+Sections:
+1. [Opening: core problem statement]
+2. [Data: specific metrics from Source A]
+3. [Comparison: Source B vs Source C]
+4. [Implications: what this means for our ICP]
+5. [Next steps: validation requirements]</div>
+
+    <p>"Make it look professional" = zero signal. "Dark background, orange accent (#d97757), max 3 bullets per slide, chart on slide 4 comparing three pricing models" = high signal.</p>
+
+    <p><strong>Underrated use case:</strong> Do not expect a final deck. Use slide generation to get a <strong>proposed narrative structure</strong>. Upload your source material, generate a Detailed deck, study the story arc it proposes. Now you have a starting point to build on — faster than staring at a blank PowerPoint.</p>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Batch Revision Rule</span>
+      <span class="v v-g"></span>The Revise button lets you edit individual slides, but <strong>every revision regenerates the entire deck</strong> — quota-limited. Queue all slide edits in the "Pending Changes" panel before hitting "Generate new deck." Do not revise one slide at a time.
+    </div>
+
+    <p><strong>Critical reality:</strong> Slides are rendered images, not editable text. PPTX export = locked visuals. See next section for post-generation editing.</p>
+
+    <h3>Reports</h3>
+
+    <p><span class="v v-g"></span><strong>Briefing Doc</strong>, <strong>Study Guide</strong>, <strong>Blog Post</strong>, plus <strong>Create Your Own</strong> (full custom prompt). Dynamic suggestions adapt to source content — scholarly articles trigger "glossary" or "magazine explainer" suggestions; news articles trigger "explainer" formats.</p>
+
+    <p><strong>"Create Your Own"</strong> is the most powerful option. You control structure, style, tone, emphasis. Use it when standard formats do not match your deliverable.</p>
+
+    <p><strong>PM use case:</strong> Generate a Briefing Doc → save as note → convert to source. This "compressed evidence" retrieves more efficiently than raw originals for subsequent queries. Reports are text-based — no rendering issues — most reliable output after Data Tables.</p>
+
+    <div class="callout callout-orange">
+      <span class="callout-label">Compression Warning</span>
+      Every report is an act of compression. Nuance and finer details get dropped. Use reports as entry points and retrieval-optimized sources, not final deliverables. Audit against originals for high-stakes work.
+    </div>
+
+    <h3>Mind Maps</h3>
+
+    <p>Visual diagram of how NotebookLM organizes your source content. Interactive — click any branch to chat on that subtopic.</p>
+
+    <p><span class="v v-g"></span><strong>No pencil icon, no prompt field.</strong> You only control source selection. Best use: run a mind map first on any new notebook to see the AI's "mental model" of your sources. Reveals where the model groups things you want separate.</p>
+
+    <h3>Infographics</h3>
+
+    <div class="callout callout-green">
+      <span class="callout-label">Quality by Detail Level — Tested</span>
+      <strong>Concise:</strong> Near-zero text errors. Social, quick overviews.<br>
+      <strong>Standard:</strong> Reliable text, good balance. The sweet spot.<br>
+      <strong>Detailed:</strong> Frequently garbles text. Impressive at first glance, unreliable on close read.
+    </div>
+
+    <p>10 style presets: Professional, Kawaii, Bento Grid, Clay, others.</p>
+
+    <div class="callout callout-teal" style="margin: 1.5rem 0;">
+  <span class="callout-label">Remove Watermarks Without Paying $250/mo</span>
+  <span class="v v-c"></span>Removing NotebookLM's logo from infographics requires Google AI Ultra ($250/mo). A free alternative: <strong>Magic Eraser</strong> (magiceraser.org) removes watermarks from images. Upload your infographic, paint over the logo, apply. You can then download a clean version. This also works for slide decks exported as images. Not a native integration, but it eliminates the paywall friction for occasional polish needs.
+</div>
+
+    <h4>Style-Stealing via Gemini</h4>
+
+    <p><span class="v v-c"></span>Screenshot a design → feed to Gemini with one of two prompts:</p>
+
+    <div class="prompt-block"><strong>For infographics:</strong>
+"I have uploaded an image. Describe the visual features in detail so I can replicate this exact style in another tool."
+
+<strong>For slide decks:</strong>
+"Explain this presentation slide design in detail (layout, color palette, typography, visual elements) so I can recreate this style for a different topic."</div>
+
+    <p>Paste Gemini's output into NotebookLM's style field. Add: <em>"The audience are [describe]. Keep explanations [beginner-friendly / technical / executive-level]."</em></p>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Brand Alignment</span>
+      Upload brand guidelines as a source. Add: "Follow the attached brand guideline for colors, fonts, and design style." Works for infographics, reports, and slide decks.
+    </div>
+
+    <h3>Data Tables</h3>
+
+    <p><span class="v v-g"></span>Most reliable studio output. Structured prompt → table in 30 seconds, source column on every cell.</p>
+
+    <div class="prompt-block">"Compare these three AI agents by pricing tier, API rate limits, latency benchmarks, and integration options. One row per tool. Include source citation for every cell."</div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">Data Table<br><small style="color:var(--mid-gray)">Structure the unstructured</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Export to Sheets<br><small style="color:var(--mid-gray)">Sort, filter, edit</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Re-import Sheet<br><small style="color:var(--mid-gray)">Now it's clean data</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Infographic<br><small style="color:var(--mid-gray)">Visual from structured data</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Gemini Dashboard<br><small style="color:var(--mid-gray)">Interactive + filterable</small></div>
+    </div>
+
+    <h3>Flashcards and Quizzes</h3>
+
+    <p>Customizable by count, difficulty, topic. "Explain" button opens source-cited deep-dive on any card. Valuable for domain onboarding — quiz yourself on core concepts before your first stakeholder meeting.</p>
+
+    <h3>The Quality Audit (Run After Every Generation)</h3>
+
+    <div class="prompt-block"><span class="v v-s"></span>"Audit the last output against [source]. Identify:
+1. Three specific metrics omitted
+2. Two technical terms replaced by generic synonyms
+3. One instance of added context not in the source
+Present as a Fidelity Score out of 100."</div>
+
+    <p>This creates a feedback loop. Run it after every generation — not just when something seems off. Every report is an act of compression, and nuance gets dropped even when output looks clean.</p>
+
+    <p>Each item targets a specific failure mode. Item&nbsp;1 (metrics omitted) catches <strong>Contextual Averaging</strong> — where specific data like "LTV:CAC ratio of 3.2:1 in enterprise" gets compressed to "strong unit economics." Item&nbsp;2 (synonym replacement) catches the same failure in language — precise terms replaced by generic stand-ins that erase the distinction. Item&nbsp;3 (added context not in source) catches <strong>Hallucination</strong> — invented detail that was never in your source, which is hardest to spot without an explicit check.</p>
+
+    <div class="callout callout-teal" style="margin: 1.5rem 0;">
+      <span class="callout-label">The Iterative Tightening Loop</span>
+      <p style="margin: 0.6rem 0 0 0;">After each audit, run this sequence:</p>
+      <p style="margin: 0.4rem 0 0 0;"><strong>1. Note what was dropped or altered</strong> — use the Fidelity Score as a diagnostic, not a grade.</p>
+      <p style="margin: 0.4rem 0 0 0;"><strong>2. Open the three-dot menu (&#x22EE;) → View custom prompt</strong> — this shows exactly what NotebookLM generated internally. It tells you whether the failure was in your instructions or in the model's interpretation of them. These are different problems with different fixes.</p>
+      <p style="margin: 0.4rem 0 0 0;"><strong>3. Adjust your 3–5 source selection or tighten your prompt</strong> — if a metric was missed, add it to a Staging Note; if a term was swapped, add it to your Definitions Source.</p>
+      <p style="margin: 0.4rem 0 0 0;"><strong>4. Re-generate and audit again.</strong></p>
+      <p style="margin: 0.8rem 0 0 0;">If the Fidelity Score stays low after two or three rounds, the task is asking for creative synthesis that goes beyond what NotebookLM can ground in sources — a signal to escalate to <strong>Gemini</strong> with the notebook attached. NotebookLM is conservative by design; Gemini + a linked notebook can reason beyond the source boundary.</p>
+    </div>
+
+    <div class="callout callout-amber" style="margin: 1.5rem 0;">
+  <span class="callout-label">Export Everything: Multiple Formats, One Command</span>
+  <span class="v v-c"></span>NotebookLM's built-in downloads are limited. <strong>Notebook LM Ultra Exporter</strong> wraps export buttons throughout the interface: Reports export as Markdown, Word, or PDF. Infographics support multiple formats with optional watermarking. Slides let you select individual slides or merge them, then export as PowerPoint, video, or PDF. Chat histories export as formatted text. This eliminates the friction of manual copy-paste and screenshot workflows for teams that need outputs in specific formats.
+</div>
+  </section>
+
+
+  <!-- SLIDES -->
+  <section class="section" id="slides">
+    <div class="section-label sl-complement">06 — Post-Generation Editing</div>
+    <h2>Fix Slides After Generation (What Works, What Doesn't)</h2>
+
+    <p><span class="v v-g"></span>NotebookLM slides are <strong>rendered images</strong>, not editable text layers. The PPTX export contains locked visuals. This shapes everything about how you work with them.</p>
+
+    <h3>The Revise Button: What Works and What Doesn't</h3>
+
+    <p><span class="v v-g"></span>Click a slide → Magic Wand icon → a prompt box appears on that specific slide. Changes go to a <strong>pending queue</strong>. NotebookLM rebuilds the deck with all queued revisions at once. The original stays intact as rollback.</p>
+
+    <div class="callout callout-green">
+      <span class="callout-label">What Works</span>
+      Structural commands with concrete targets:<br>
+      • "Convert body to a 3-column comparison table. Column 1: [X], Column 2: [Y], Column 3: [Z]. High-contrast color on Column 3."<br>
+      • "Update the third bullet to include the verbatim phrase '[exact metric]'. Make it bold and 20% larger."<br>
+      • "Keep title. Replace body with a single key stat and one supporting sentence."
+    </div>
+
+    <div class="callout callout-orange">
+      <span class="callout-label">What Fails</span>
+      • <span class="v v-c"></span><strong>Vague instructions:</strong> "Make this cleaner" / "Simplify" / "Less text" — no structural anchor for the rendering engine.<br>
+      • <span class="v v-g"></span><strong>Cross-slide awareness:</strong> "Make consistent with slide 3" — each revision is scoped to one slide only.<br>
+      • <span class="v v-g"></span><strong>Adding or removing slides:</strong> Hard limitation. Edits only on existing slides.<br>
+      • <span class="v v-s"></span><strong>Font/color overrides:</strong> Unreliable — Nano Banana Pro has its own rendering preferences.
+    </div>
+
+    <h3>Post-Generation Editing: Two Paths</h3>
+
+    <table class="compare-table">
+      <thead><tr><th></th><th>Canva (Modify Design)</th><th>Gamma (Replace Design)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>What it does</strong></td><td><span class="v v-c"></span>OCR + generative inpainting. Extracts text from the image, reconstructs the background behind it. You edit text; original design stays. Professional OCR tools (Adobe Acrobat Pro, ABBYY FineReader) can also extract text but leave visual artifacts — Canva is the only consumer tool with generative background reconstruction.</td><td><span class="v v-c"></span>Content reflowing. Ignores original design entirely, rebuilds your content in a new template.</td></tr>
+        <tr><td><strong>Workflow</strong></td><td>Export .pptx → Upload to Canva → Magic Studio: Grab Text → Edit text → Export</td><td>Copy text from NotebookLM slides → Paste into Gamma.app → Select template → Export</td></tr>
+        <tr><td><strong>Use when</strong></td><td>You want to keep the NotebookLM design but fix specific text/data</td><td>The NotebookLM design is disposable and you need a brand-consistent deck fast</td></tr>
+        <tr><td><strong>Limitation</strong></td><td>Complex layouts can confuse the inpainting; background reconstruction is approximated</td><td>All original visual design is lost; you start over aesthetically</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SHARING -->
+  <section class="section" id="sharing">
+    <div class="section-label">07 — Knowledge Lifecycle</div>
+    <h2>Share Notebooks, Save Knowledge, Build Iteratively</h2>
+
+    <h3>Convert Chat to Source</h3>
+
+    <p><span class="v v-g"></span>After a productive chat exchange — say you identified a competitive pattern or worked through a framework — you can <strong>convert the conversation into a source document</strong>. It becomes part of the notebook's knowledge base, retrievable in future queries.</p>
+
+    <p>This enables iterative knowledge building: raw sources → chat analysis → save as note → convert to source → richer base for next query. Each cycle deepens the notebook's intelligence.</p>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Citation Warning</span>
+      <span class="v v-c"></span>Notes saved from chat responses lose their inline citations — they become plain text. If you convert notes to sources, the citation links are gone. Keep original sources active alongside note-derived sources if traceability matters.
+    </div>
+
+    <h3>Share Chat-Only Notebooks (Pro)</h3>
+
+    <p><span class="v v-g"></span>You can share a notebook where recipients see all sources and can chat with them, but <strong>cannot modify the notebook</strong>. Analytics track usage.</p>
+
+    <p>Use cases for PM/PMMs: share a competitive intelligence base with sales teams. Share a customer research notebook with product teams. The recipient gets a source-grounded research assistant without access to edit your source curation.</p>
+
+    <h3>Living Documents via Google Drive</h3>
+
+    <p><span class="v v-g"></span>Google Docs, Slides, and Sheets linked as sources are <strong>living documents</strong> — NotebookLM can fetch latest changes via the sync button. PDFs are static uploads. For ongoing projects, maintain key sources as Google Docs. Reserve PDFs for external documents you will not modify.</p>
+    <div class="callout callout-blue" style="margin: 1.5rem 0;">
+  <span class="callout-label">Google Docs Sync: The Missing Refresh Button</span>
+  <span class="v v-c"></span>NotebookLM takes a snapshot of Google Docs when uploaded—changes made later aren't reflected unless you manually delete and re-upload. For living documents (market sizing spreadsheets, competitive matrices, interview notes updated over weeks), this breaks the continuity you need. <strong>Cortex</strong> solves this with a single-click refresh that re-syncs all Google Docs in a notebook simultaneously, keeping your notebook aligned with evolving source data.
+</div>
+  </section>
+
+  <!-- GEMINI -->
+  <section class="section" id="gemini">
+    <div class="section-label sl-complement">08 — Compound Power</div>
+    <h2>How NotebookLM + Gemini + Gems Create New Possibilities</h2>
+
+    <p>NotebookLM's context is locked inside NotebookLM — except through one integration.</p>
+
+    <!-- NotebookLM > Gemini Visualization -->
+    <div class="nblm-gemini-viz">
+      <div class="viz-side viz-nblm">
+        <div class="viz-header">NotebookLM</div>
+        <div class="viz-role">The Brain</div>
+        <div class="viz-subtitle">Source-grounded · Hallucination-resistant</div>
+        <div class="viz-capabilities">
+          <div class="viz-cap">Upload sources</div>
+          <div class="viz-cap">Retrieve &amp; cite</div>
+          <div class="viz-cap">Extract evidence</div>
+          <div class="viz-cap">Studio outputs</div>
+          <div class="viz-cap">Data Tables → Sheets</div>
+        </div>
+        <div class="viz-constraint">
+          <span class="viz-lock">⛔</span> Cannot synthesize beyond sources<br>
+          <span class="viz-lock">⛔</span> No original frameworks<br>
+          <span class="viz-lock">⛔</span> Context locked inside
+        </div>
+      </div>
+
+      <div class="viz-bridge">
+        <div class="viz-arrow-line"></div>
+        <div class="viz-bridge-labels">
+          <div class="viz-flow viz-flow-right">
+            <span class="viz-flow-arrow">→</span>
+            <span>Notebooks as live sources</span>
+          </div>
+          <div class="viz-flow viz-flow-right">
+            <span class="viz-flow-arrow">→</span>
+            <span>Grounded evidence + citations</span>
+          </div>
+          <div class="viz-flow viz-flow-right">
+            <span class="viz-flow-arrow">→</span>
+            <span>Structured data (Sheets)</span>
+          </div>
+          <div class="viz-flow viz-flow-left">
+            <span>Manual copy-paste only</span>
+            <span class="viz-flow-arrow viz-flow-arrow-dim">←</span>
+          </div>
+        </div>
+        <div class="viz-arrow-line"></div>
+        <div class="viz-bridge-tag">One-directional sync<br><small>Notebook updates → Gemini sees instantly</small></div>
+      </div>
+
+      <div class="viz-side viz-gemini">
+        <div class="viz-header">Gemini + Gems</div>
+        <div class="viz-role">The Hands</div>
+        <div class="viz-subtitle">Creative · Generative · Unconstrained</div>
+        <div class="viz-capabilities">
+          <div class="viz-cap">Original frameworks</div>
+          <div class="viz-cap">Positioning hypotheses</div>
+          <div class="viz-cap">Creative synthesis</div>
+          <div class="viz-cap cap-gem">Custom Gems (persistent assistants)</div>
+          <div class="viz-cap cap-canvas">Canvas (interactive dashboards)</div>
+        </div>
+        <div class="viz-constraint viz-unlock">
+          <span class="viz-lock">✅</span> Grounded by notebook evidence<br>
+          <span class="viz-lock">✅</span> Dynamic sync — grows with research<br>
+          <span class="viz-lock">✅</span> Full creative + generative power
+        </div>
+      </div>
+    </div>
+
+    <h3>Notebooks as Live Context in Gemini</h3>
+
+    <p><span class="v v-g"></span>In the Gemini app: click the <strong>+ button → NotebookLM</strong> (at the bottom of the menu) → select a notebook. Gemini now has your curated, source-grounded research as context, combined with Gemini's full creative and generative capabilities that NotebookLM deliberately restricts.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Why This Matters for PM/PMMs</span>
+      NotebookLM is conservative by design — it stays inside your sources, will not generate original frameworks or positioning hypotheses. <strong>Gemini with your notebook attached</strong> can use your grounded evidence as material for creative synthesis.<br><br>
+      <strong>Example:</strong> Build a notebook with customer interviews + competitive pricing + market sizing. Extract contradictions and metrics via NotebookLM Chat. Open Gemini, attach notebook: "Draft three positioning hypotheses for [ICP]. Each must cite evidence from the notebook. Flag where evidence is thin."<br><br>
+      NotebookLM provides the evidence base. Gemini provides the creative leap. Citations keep the creative output grounded.
+    </div>
+
+    <h3>Custom Gems: Persistent Domain Assistants</h3>
+
+    <p><span class="v v-g"></span>Gems are custom AI assistants inside Gemini — similar to Custom GPTs. Create a new Gem: give it a name, description, and instructions for its role. Under <strong>Knowledge → Add Files → NotebookLM</strong>, attach your notebook. The Gem now has custom behavior rules plus your source-grounded research as its knowledge base.</p>
+
+    <p><span class="v v-c"></span><strong>Dynamic sync:</strong> Add new sources to the notebook and the Gem sees them immediately. Your assistant gets smarter as your research grows, without manual file uploads.</p>
+
+    <div class="callout callout-blue">
+      <span class="callout-label">Gem Setups for PM/PMMs</span>
+      <strong>Competitive Intelligence Gem:</strong> Connected to competitor teardowns, pricing pages, analyst reports. Ask positioning questions anytime — answers from evidence.<br><br>
+      <strong>Customer Discovery Gem:</strong> Connected to interview transcripts and survey data. Identifies patterns, contradictions, underserved needs. Stays grounded in actual customer language.<br><br>
+      <strong>GTM Planning Gem:</strong> Connected to market data, strategy docs, pricing analysis. A thought partner that cannot hallucinate beyond your data.
+    </div>
+
+    <h3>Gemini Canvas: From Notebook Data to Interactive Dashboards</h3>
+
+    <p><span class="v v-c"></span>This is where the compound effect becomes tangible. Gemini's <strong>Canvas mode</strong> turns your NotebookLM data into interactive visual applications — not static charts, but filterable, clickable dashboards.</p>
+
+    <h4>Exact Workflow (Tested)</h4>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content"><strong>Open Gemini → Add File → NotebookLM</strong> → select your notebook (the one with structured data, ideally after the Data Table → Sheets → re-import cycle).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content"><strong>Turn on Canvas mode</strong> (toggle in the Gemini interface). Instead of generating text, Gemini will build something visual and interactive.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content"><strong>Prompt with structure, not vague asks.</strong> Example that works:<br>
+      <em>"Create an interactive dashboard that lets users explore [products/competitors] based on their features. Include feature toggles, a visual product card for each item, and a detailed panel showing strengths, limitations, subscription requirements, and key differentiating feature. Do not use tables — focus on visual interactive exploration."</em></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content"><strong>Interact and iterate.</strong> Filter by category. Click into individual items for detail panels. The dashboard pulls directly from your notebook sources — every data point is traceable.</div>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">What the Dashboard Actually Shows You</span>
+      Not just what a product does — the tradeoffs. What it prioritizes and what it leaves out. Subscription requirements, privacy considerations, offline capabilities — details usually buried deep inside product pages, now surfaced and comparable side by side.
+    </div>
+
+    <h3>The Re-Import Cycle: Why It Exists and When to Use It</h3>
+
+    <p>The Gemini Canvas integration works whether you connect a notebook with raw sources or one built from clean, structured data. The difference is fidelity — and the Re-Import Cycle exists to close that gap.</p>
+
+    <p>Raw sources (PDFs, competitor product pages, analyst reports, interview transcripts) are written for human readers, not for comparative extraction. They use inconsistent terminology, bury key metrics in prose, and mix qualitative and quantitative data without signalling which is which. When Gemini builds a dashboard directly from this kind of material, it must interpret — and interpretation introduces the same flattening risks that exist throughout NotebookLM: generic synonyms, omitted caveats, blurred distinctions.</p>
+
+    <div class="callout callout-teal" style="margin: 1.5rem 0;">
+      <span class="callout-label">When to Run the Full Cycle</span>
+      <p style="margin: 0.4rem 0 0 0;"><strong>Use the Re-Import Cycle when:</strong> your sources are unstructured or inconsistent, you are comparing multiple items across specific metrics, or the output requires every data point to be traceable and verifiable by a stakeholder.</p>
+      <p style="margin: 0.6rem 0 0 0;"><strong>Skip it when:</strong> you already have structured data (a spreadsheet, a clean table, a formatted report), your question is analytical rather than comparative, or you are using Canvas for creative synthesis rather than data exploration.</p>
+      <p style="margin: 0.6rem 0 0 0;">The re-import step — exporting the Data Table to Google Sheets, editing it manually, then re-importing — is the human accuracy layer. It is not convenience; it is the step where you verify what the AI extracted before locking it in as the foundation of the dashboard. Skipping it means trusting automated retrieval to have caught every nuance in sources that were not written to be retrieved.</p>
+    </div>
+
+    <h3>The Full Pipeline: Raw Sources → Interactive Dashboard</h3>
+
+    <div class="pipeline">
+      <div class="pipeline-step">Raw sources<br><small style="color:var(--mid-gray)">(PDFs, URLs, Docs)</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">NotebookLM Data Table<br><small style="color:var(--mid-gray)">Structure the unstructured</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Google Sheets<br><small style="color:var(--mid-gray)">Edit, sort, filter</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Re-import to NotebookLM<br><small style="color:var(--mid-gray)">Now working from clean data</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">Gemini Canvas<br><small style="color:var(--mid-gray)">Interactive dashboard</small></div>
+    </div>
+
+    <p>A PM starting from five competitor product pages can reach an interactive feature-comparison dashboard — without manual data entry, without a spreadsheet afternoon, and with every data point traceable to its source.</p>
+
+    <div class="callout callout-dark">
+      <span class="callout-label">Limitation</span>
+      <span class="v v-c"></span>The integration is one-directional: notebook feeds Gemini. Gemini cannot write back to your notebook. Saving insights back requires manual copy-paste or saving as a note inside NotebookLM.
+    </div>
+  </section>
+
+  <!-- WORKFLOW -->
+  <section class="section" id="workflow">
+    <div class="section-label">Reference</div>
+    <h2>The End-to-End Professional Workflow</h2>
+
+    <div class="workflow-steps">
+      <div class="wf-item"><strong>Prepare sources</strong> — structure for retrieval, pre-process complex docs through Claude, create definitions source, create staging notes for critical data<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: unstructured dense sources trigger contextual averaging at retrieval — your precision points are lost before generation begins. Structure is what makes the difference between a chunk that surfaces a specific finding and a chunk that surfaces an averaged generalization.</span></div>
+      <div class="callout callout-orange" style="margin: 1.5rem 0;">
+  <span class="callout-label">Speed Source Ingestion with Extensions</span>
+  <span class="v v-c"></span>Pulling content into NotebookLM from the web and YouTube creates friction in real workflows. <strong>YouTube to NotebookLM</strong> adds a direct button below any video to capture it to a notebook (preferred for clean YouTube integration). <strong>Notebook LM Web Importer</strong> handles articles, blog posts, and web pages. <strong>Cortex</strong> (premium) includes importing with screenshot-to-PDF options. All three reduce context-switching cost during active research.
+</div>
+      <div class="wf-item"><strong>Vet sources</strong> — run the three vetting prompts, save results as notes<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: contradictions found before generation can be surfaced explicitly. Contradictions found after generation were already silently resolved — and you will not know what the model chose to drop or which source it quietly sided with.</span></div>
+      <div class="callout callout-green" style="margin: 1.5rem 0;">
+  <span class="callout-label">Organize at Scale with Folder Management</span>
+  <span class="v v-c"></span>With dozens of active notebooks, NotebookLM's flat dashboard becomes unusable. <strong>Bookshelf Folder Manager for NotebookLM</strong> adds a sidebar panel that lets you create folders ("bookshelves") and drag notebooks into them. Folders persist across sessions and remain accessible even when you're inside a notebook. For power users maintaining 50+ notebooks across multiple domains (competitive research, customer interviews, market analysis), this shift from chaos to structure is non-negotiable.
+</div>
+      <div class="wf-item"><strong>Configure notebook</strong> — full 10K-character brief in Configure Chat, create MASTER INSTRUCTIONS note as backup<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: instruction decay is structural — Configure Chat instructions fade after several exchanges. The MASTER INSTRUCTIONS note stays retrievable when the session's behavioral memory has already degraded. This is the difference between instructions that govern the first three responses and instructions that govern all of them.</span></div>
+      <div class="wf-item"><strong>Validate retrieval</strong> — ask 5–10 specific questions about nuances you know exist. If Chat misses them, source prep needs work<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: if a nuance you know exists in your sources does not surface in Chat, it will not surface in Studio outputs either. This step catches retrieval failure before it becomes output failure — when it is still fixable through source restructuring rather than prompt iteration.</span></div>
+      <div class="wf-item"><strong>Generate outputs</strong> — selective source selection per output, format-specific instructions in customization fields<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: every source you add dilutes the retrieval weight of every other source. Fewer sources means a higher percentage of each source surfaces per query. Selecting all sources is the single most reliable way to produce impressive-looking but averaged output.</span></div>
+      <div class="wf-item"><strong>Audit</strong> — run the Fidelity Score prompt. Note what was dropped<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: compression is invisible by default — the output looks complete even when it has quietly dropped your caveats, conditions, and exceptions. The Fidelity Score makes the invisible visible. Without it, you are shipping your stakeholders a confident summary of what the model chose to keep.</span></div>
+      <div class="callout callout-dark" style="margin: 1.5rem 0;">
+  <span class="callout-label">Preserve Chat History as Evidence</span>
+  <span class="v v-c"></span>Chat threads are ephemeral in NotebookLM—no bulk export, no easy backup. If you're running the Fidelity Score audit or documenting your reasoning for stakeholders, <strong>Cortex</strong> and <strong>Notebook LM Ultra Exporter</strong> both offer chat export in multiple formats (Markdown, PDF, plain text). For compliance, auditing, or knowledge transfer, this transforms chat from a scratchpad into archivable evidence.
+</div>
+      <div class="wf-item"><strong>Regenerate</strong> — tighter instructions targeting specific losses. Multiple passes, not one take<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: the first output is a calibration, not a deliverable. Each regeneration narrows the gap between what the sources actually say and what the model chose to surface. The Audit tells you where the gap is. Regeneration closes it — iteratively, not in a single attempt.</span></div>
+      <div class="wf-item"><strong>Escalate to Gemini</strong> — attach notebook for creative synthesis, strategic framing, or interactive dashboards<span style="font-size: 0.82em; opacity: 0.72; font-style: italic; display: block; margin-top: 0.35em;">Why it matters: NotebookLM's conservatism is intentional — it does not synthesize beyond your sources. When the task requires the creative leap (positioning strategy, hypothesis generation, scenario planning), Gemini with the notebook attached adds that capability without losing source grounding. This is not a workaround — it is the intended compound workflow.</span></div>
+      <div class="callout callout-green" style="margin: 1.5rem 0;">
+  <span class="callout-label">Programmatic Notebook Access via MCP</span>
+  <span class="v v-c"></span>For developers and power users integrating NotebookLM into automated workflows, <strong>notebooklm-mcp-cli</strong> exposes the NotebookLM API through the Model Context Protocol. You can list notebooks, read sources, execute chat queries, and extract structured data—all from the command line or inside Claude Code sessions. This enables batch operations, custom export pipelines, and integration into broader research automation systems without manual UI interaction.
+</div>
+    </div>
+  </section>
+
+  <!-- LIMITS -->
+  <section class="section" id="limits">
+    <div class="section-label">Reference</div>
+    <h2>What NotebookLM Cannot Do</h2>
+
+    <p><span class="v v-g"></span><strong>Creative synthesis beyond sources.</strong> It will not generate original frameworks, positioning angles, or strategic hypotheses. Use Claude or Gemini (with notebook attached) for the creative leap. Use NotebookLM to ensure the leap is grounded.</p>
+
+    <div class="callout callout-blue" style="margin: 1.5rem 0;">
+  <span class="callout-label">Multi-Language Support Beyond English</span>
+  <span class="v v-c"></span>NotebookLM's interface defaults to English. For non-English speakers, <strong>Notebook LM Language Switcher</strong> translates interface text (headers, buttons, source counts, Studio labels) into 20+ languages. It doesn't translate notebook names or content—only the UI chrome. For distributed teams or researchers in non-English markets, this removes the friction of navigating an English-only interface.
+</div>
+
+    <p><span class="v v-g"></span><strong>Real-time data.</strong> Static uploads, not live feeds. Search externally, upload results as a source.</p>
+
+    <p><span class="v v-g"></span><strong>Brainstorming.</strong> Deliberately conservative. NotebookLM tells you what your data says. It will not tell you what to do about it.</p>
+
+    <p><span class="v v-l"></span><strong>Long-session consistency.</strong> Instruction decay is structural in the current implementation — not confirmed as permanently unfixable, but not addressed by Google yet. Plan for sessions of several quality exchanges per thread. Start fresh for new questions.</p>
+
+    <div class="callout callout-orange" style="margin-top: 2rem;">
+      <span class="callout-label">The Bottom Line</span>
+      The tool produces impressive output on defaults. That is the trap. Impressive-looking output that flattens the distinctions your stakeholders need is worse than no output — because it looks authoritative while being wrong in the places that matter.<br><br>
+      Every technique in this guide works on the same principle: <strong>the AI will do whatever is statistically safest unless you constrain it to do what is specifically right.</strong><br><br>
+      Configure the inputs. Lock the instructions. Audit the outputs. Generate again.<br><br>
+      Get in the driver's seat. The machine does not know where you are going.
+    </div>
+  </section>
+
+  <!-- EXTENSIONS -->
+  <section class="section" id="extensions">
+    <div class="section-label sl-complement">Ecosystem</div>
+    <h2>The NotebookLM Extension Ecosystem</h2>
+
+    <p><span class="v v-g"></span>NotebookLM's core feature set is powerful but deliberately incomplete. The community has filled these gaps with a flourishing ecosystem of browser extensions and complementary tools that solve real friction points in production workflows. Understanding which extension solves which problem is essential for power users.</p>
+
+    <h3>Source Ingestion (Getting Content In)</h3>
+
+    <h4>YouTube to NotebookLM</h4>
+    <p><strong>Problem solved:</strong> Capturing YouTube videos requires copying the URL, navigating to NotebookLM, pasting it, and selecting a notebook. Three context switches.</p>
+    <p><span class="v v-c"></span>This extension adds a button directly under any YouTube video. Click it, select your notebook (or create a new one), and the video is captured in seconds. Preferred for YouTube because it's cleaner than the generic web importer and sits where you already are.</p>
+
+    <h4>Notebook LM Web Importer</h4>
+    <p><strong>Problem solved:</strong> Capturing articles, blog posts, and web pages without manual URL copying.</p>
+    <p><span class="v v-c"></span>Works on any webpage. Click the extension, choose your notebook, and the page is captured. Also handles YouTube videos (but YouTube to NotebookLM is preferred for video because it integrates better). Free, no account required beyond NotebookLM access.</p>
+
+    <h4>Cortex (Premium, with Free Tier)</h4>
+    <p><strong>Problem solved:</strong> Importing with additional capture options (screenshots as PDFs, source filtering, bulk export).</p>
+    <p><span class="v v-c"></span>Cortex includes the import functionality of the above two, but adds options to capture the page as a screenshot and save as PDF before upload—useful for pages with heavy JavaScript or dynamic content that might not parse cleanly. Free tier includes basic importing; Pro ($2.40/mo annual) and Lifetime ($49 one-time) unlock advanced features.</p>
+
+    <div class="callout callout-orange">
+      <span class="callout-label">Which Ingestion Tool to Use</span>
+      Use <strong>YouTube to NotebookLM</strong> for videos (most integrated). Use <strong>Web Importer</strong> for articles and web pages (free, no account). Use <strong>Cortex</strong> if you're a power user managing complex imports or need screenshot-to-PDF conversion.
+    </div>
+
+    <h3>Organization &amp; Management</h3>
+
+    <h4>Bookshelf Folder Manager for NotebookLM</h4>
+    <p><strong>Problem solved:</strong> NotebookLM's dashboard has no native folder structure. At 20+ notebooks, it becomes unnavigable.</p>
+    <p><span class="v v-c"></span>This extension adds a sidebar button that opens a folder panel. Create folders ("bookshelves") and drag notebooks into them. Folders persist, remain visible even inside notebooks, and solve the organizational chaos of a flat dashboard. Essential for researchers maintaining dozens of concurrent projects.</p>
+
+    <h4>Cortex (Notebook Dashboard)</h4>
+    <p><strong>Problem solved:</strong> Beyond folders, you need to see metadata—source counts, last edited dates, tags.</p>
+    <p><span class="v v-c"></span>Cortex's "manage notebooks" feature opens a dashboard view of all your notebooks with sortable columns: name, source count, creation date, last edited. You can also tag notebooks for custom organization. If you're using Cortex for other features (export, Google Docs sync), this adds substantial value to notebook management at scale.</p>
+
+    <h3>Source Maintenance (Keeping Data Fresh)</h3>
+
+    <h4>Cortex (Google Docs Sync)</h4>
+    <p><strong>Problem solved:</strong> NotebookLM snapshots Google Docs at upload time. Edits made after upload aren't reflected unless you manually delete and re-upload.</p>
+    <p><span class="v v-c"></span>For living documents (market sizing, competitive matrices, interview notes updated over weeks), this snapshot behavior breaks continuity. Cortex adds a refresh button that re-syncs all Google Docs in a notebook with a single click, keeping your notebook aligned with evolving source data. This is a standout feature for research-heavy workflows.</p>
+
+    <div class="callout callout-blue">
+      <span class="callout-label">When Source Freshness Matters</span>
+      If your notebooks are built from static PDFs and articles, you don't need this. If you're building from Google Docs that you or collaborators edit over time, Cortex's sync feature is essential—it's the only way to keep NotebookLM's understanding of your data aligned with reality.
+    </div>
+
+    <h3>Output Extraction &amp; Format Control</h3>
+
+    <h4>Notebook LM Ultra Exporter (Markdown, PDF, and More)</h4>
+    <p><strong>Problem solved:</strong> NotebookLM's built-in downloads are limited. Reports export as one format, slides as another, no granular control.</p>
+    <p><span class="v v-c"></span>This extension adds export buttons throughout NotebookLM:</p>
+    <ul style="margin-left: 1.5rem; margin-top: 0.8rem; margin-bottom: 1rem;">
+      <li><strong>Reports:</strong> Export as Markdown, Word, PDF, or other formats</li>
+      <li><strong>Infographics:</strong> Multiple formats with optional watermarking control</li>
+      <li><strong>Slides:</strong> Select individual slides or merge them; export as PowerPoint, video, or PDF</li>
+      <li><strong>Chat:</strong> Export conversation history in multiple formats</li>
+    </ul>
+    <p><span class="v v-c"></span>This eliminates the friction of manual copy-paste and screenshot workflows for teams that need outputs in specific formats or for downstream tools.</p>
+
+    <h4>Cortex (Bulk Export of Studio Outputs)</h4>
+    <p><strong>Problem solved:</strong> You created 15 audio overviews and need to extract all of them at once.</p>
+    <p><span class="v v-c"></span>Cortex's export feature lets you bulk-download everything created in Studio in a single operation, organizing outputs by type. For content teams or researchers generating multiple artifacts, this saves substantial time versus one-by-one downloads.</p>
+
+    <h4>Magic Eraser (Watermark Removal)</h4>
+    <p><strong>Problem solved:</strong> NotebookLM's infographics have a logo in the bottom right. Removing it requires a $250/mo subscription.</p>
+    <p><span class="v v-c"></span><strong>Magic Eraser</strong> (magiceraser.org, not a NotebookLM extension but essential for this workflow) is a free online tool that removes watermarks from images. Upload your infographic, paint over the logo, apply. Download the clean version. This also works for slide decks exported as images. It's a workaround, not native, but it eliminates the paywall friction for occasional polish needs.</p>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Export Strategy by Use Case</span>
+      <strong>One-off exports:</strong> Use Ultra Exporter (free).<br><strong>Bulk operations:</strong> Use Cortex.<br><strong>Watermark removal:</strong> Use Magic Eraser (free, external).<br><strong>Complex format needs:</strong> Combine Ultra Exporter + Magic Eraser.
+    </div>
+
+    <h3>Accessibility &amp; Localization</h3>
+
+    <h4>Notebook LM Language Switcher</h4>
+    <p><strong>Problem solved:</strong> NotebookLM's interface is English-only. Non-English speakers navigate an unfamiliar UI.</p>
+    <p><span class="v v-c"></span>This extension translates the NotebookLM interface into 20+ languages: headers, buttons, source counts, Studio labels. It doesn't translate your notebook content or source material—only the UI chrome. For distributed teams or researchers in non-English markets, this removes the friction of navigating an English-only interface.</p>
+
+    <h3>Programmatic Access (For Developers &amp; Automation)</h3>
+
+    <h4>notebooklm-mcp-cli</h4>
+    <p><strong>Problem solved:</strong> You want to list notebooks, read sources, run chat queries, or extract data programmatically without clicking the UI.</p>
+    <p><span class="v v-c"></span>This command-line tool exposes the NotebookLM API through the Model Context Protocol (MCP). You can:</p>
+    <ul style="margin-left: 1.5rem; margin-top: 0.8rem; margin-bottom: 1rem;">
+      <li>List all notebooks and filter by metadata</li>
+      <li>Read notebook sources and metadata</li>
+      <li>Execute chat queries and extract responses</li>
+      <li>Batch export notebook data</li>
+      <li>Integrate NotebookLM into Claude Code sessions for hybrid workflows</li>
+    </ul>
+    <p><span class="v v-c"></span>This is essential for teams building custom automation, batch research pipelines, or integration workflows. It transforms NotebookLM from a web app into a programmatically accessible research backend.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">MCP CLI Use Cases</span>
+      <strong>Batch research:</strong> Loop through 20 notebooks, extract key findings to a single report.<br><strong>Monitoring:</strong> Track which notebooks were updated in the past 24 hours.<br><strong>Custom export:</strong> Extract notebook data in a format designed for your downstream tool.<br><strong>Hybrid workflows:</strong> Use Claude Code to query NotebookLM, process results, feed to Gemini Canvas.
+    </div>
+
+    <h3>Premium vs. Free: The Economics</h3>
+
+    <div class="callout callout-dark">
+      <span class="callout-label">Extension Pricing Summary</span>
+      <strong>Free:</strong> YouTube to NotebookLM, Web Importer, Bookshelf Folder Manager, Language Switcher, Ultra Exporter<br><strong>Free + Premium:</strong> Cortex (free tier: basic importing; Pro: $2.40/mo annual or $20/mo monthly; Lifetime: $49)<br><strong>Open-Source/Programmatic:</strong> notebooklm-mcp-cli (free, requires Node.js)<br><strong>External:</strong> Magic Eraser (free)<br><br>For individuals and small teams, the free tier covers most friction points. Cortex becomes essential if you're managing 30+ notebooks, working with evolving Google Docs, or need advanced export. MCP CLI is for developers and automation-heavy workflows.
+    </div>
+
+    <h3>Choosing Your Stack</h3>
+
+    <p><span class="v v-g"></span>Not every user needs every tool. The ecosystem is modular:</p>
+
+    <p><strong>Minimal stack (just unblock friction):</strong><br>
+    YouTube to NotebookLM + Web Importer (capture) + Bookshelf Folder Manager (organize) + Ultra Exporter (extract). Free. Solves 80% of friction points.</p>
+
+    <p><strong>Power user stack (production workflows):</strong><br>
+    Cortex Pro (importing, Google Docs sync, organization, bulk export) + Ultra Exporter (granular export formats) + Language Switcher (accessibility). ~$3–5/mo. Handles complex, multi-notebook, multi-stakeholder research.</p>
+
+    <p><strong>Developer/automation stack:</strong><br>
+    notebooklm-mcp-cli (programmatic access) + Cortex or Ultra Exporter (for UI-based exports when needed) + Magic Eraser (final polish). Integrates NotebookLM into larger automation pipelines.</p>
+
+    <div class="callout callout-green">
+      <span class="callout-label">The Ecosystem Signal</span>
+      The fact that the community is building all of this speaks to NotebookLM's power and to the specific gaps Google has left unfilled. Smart organizations adopt the extensions that unblock their exact constraints—not all of them, just the ones that matter to their workflow. The extensions aren't complexity; they're focus.
+    </div>
+
+  </section>
+
+</main>
+
+<!-- FEEDBACK WALL -->
+<div class="feedback-wall">
+  <div class="fw-header">Reader Feedback</div>
+  <div id="feedbackWall"></div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Written by <a href="https://www.linkedin.com/in/donato-mangialardo/" target="_blank"><svg style="display:inline-block;vertical-align:middle;margin-right:0.3rem;position:relative;top:-1px;" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path d="M7.5 9.5V17H5V9.5H7.5ZM6.25 5.5C7.08 5.5 7.75 6.17 7.75 7C7.75 7.83 7.08 8.5 6.25 8.5C5.42 8.5 4.75 7.83 4.75 7C4.75 6.17 5.42 5.5 6.25 5.5ZM9.5 9.5H12V10.6C12.4 9.9 13.3 9.3 14.6 9.3C17.1 9.3 17.5 10.9 17.5 13V17H15V13.5C15 12.5 14.8 11.5 13.5 11.5C12.2 11.5 12 12.3 12 13.4V17H9.5V9.5Z" fill="white"/></svg>Donato Mangialardo</a> · April 2026</p>
+  <p style="margin-top:0.5rem;">Built with discipline. No AI-generated fluff was harmed in the making of this guide.</p>
+</footer>
+
+<!-- FEEDBACK WIDGET -->
+<button class="feedback-trigger" onclick="document.getElementById('feedbackOverlay').classList.add('open')">
+  <span class="ft-dot"></span> Share feedback
+</button>
+
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-panel">
+    <div class="fp-header">
+      <div class="fp-title">Share feedback <span>↗</span></div>
+      <button class="fp-close" onclick="closeFeedback()">✕</button>
+    </div>
+    <div class="fp-body" id="fpBody">
+      <p class="fp-desc">Contrarian views, critiques, corrections, ideas — all welcome. Appears on the page and goes to Donato.</p>
+      <div class="fp-type-row">
+        <button class="fp-type t-contrarian" onclick="selectType(this,'Contrarian view')">Contrarian view</button>
+        <button class="fp-type t-critique" onclick="selectType(this,'Critique')">Critique</button>
+        <button class="fp-type t-correction" onclick="selectType(this,'Correction')">Correction</button>
+        <button class="fp-type t-idea" onclick="selectType(this,'Idea')">Idea</button>
+      </div>
+      <input class="fp-input" id="fpAuthor" type="text" placeholder="Your name (optional)" />
+      <input class="fp-input" id="fpContact" type="text" placeholder="Email or LinkedIn URL (optional — shown with your feedback)" />
+      <textarea class="fp-field" id="fpText" placeholder="What's on your mind? Be specific — the more concrete, the more useful."></textarea>
+      <div class="fp-actions">
+        <button class="fp-cancel" onclick="closeFeedback()">Cancel</button>
+        <button class="fp-send" id="fpSend" onclick="sendFeedback()">Send →</button>
+      </div>
+    </div>
+    <div class="fp-success" id="fpSuccess">
+      <h3>Added. Thank you.</h3>
+      <p>Your feedback is live on the page below.<br>Your email client will open — hit send to notify Donato directly.</p>
+      <button class="fp-send" style="margin-top:1rem;" onclick="closeFeedback()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var selectedType = '';
+
+function selectType(btn, label) {
+  document.querySelectorAll('.fp-type').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  selectedType = label;
+}
+
+function closeFeedback() {
+  document.getElementById('feedbackOverlay').classList.remove('open');
+  setTimeout(function(){
+    document.getElementById('fpBody').style.display = 'block';
+    document.getElementById('fpSuccess').style.display = 'none';
+    document.getElementById('fpText').value = '';
+    document.getElementById('fpAuthor').value = '';
+    document.getElementById('fpContact').value = '';
+    selectedType = '';
+    document.querySelectorAll('.fp-type').forEach(function(b){ b.classList.remove('selected'); });
+  }, 300);
+}
+
+function inferTitle(text, type) {
+  var clean = text.trim().replace(/\s+/g, ' ');
+  var first = clean.split(/[.!?]/)[0].trim();
+  if (first.length > 0 && first.length <= 80) return first;
+  var words = clean.split(' ').slice(0, 10).join(' ');
+  return words.length < clean.length ? words + '…' : words;
+}
+
+function formatContact(contact) {
+  if (!contact) return null;
+  contact = contact.trim();
+  if (!contact) return null;
+  if (contact.indexOf('linkedin.com') !== -1) {
+    return '<a href="' + (contact.indexOf('http') === 0 ? contact : 'https://' + contact) + '" target="_blank" rel="noopener">LinkedIn ↗</a>';
+  }
+  if (contact.indexOf('@') !== -1) {
+    return '<a href="mailto:' + contact + '">' + contact + '</a>';
+  }
+  return contact;
+}
+
+function renderWall() {
+  var wall = document.getElementById('feedbackWall');
+  var items = JSON.parse(localStorage.getItem('nblm_feedback') || '[]');
+  if (items.length === 0) {
+    wall.innerHTML = '<p class="fw-empty">No feedback yet. Be the first.</p>';
+    return;
+  }
+  var html = '';
+  for (var i = items.length - 1; i >= 0; i--) {
+    var item = items[i];
+    var contactHtml = formatContact(item.contact);
+    var authorDisplay = item.author || 'Anonymous';
+    html += '<div class="fw-fragment">';
+    html += '<div class="fw-fragment-type">' + (item.type || 'Feedback') + '</div>';
+    html += '<div class="fw-fragment-title">' + escHtml(item.title) + '</div>';
+    html += '<div class="fw-fragment-body">' + escHtml(item.text) + '</div>';
+    html += '<div class="fw-fragment-author">';
+    html += '— ' + escHtml(authorDisplay);
+    if (contactHtml) html += ' · ' + contactHtml;
+    html += '<span class="fw-fragment-date">' + item.date + '</span>';
+    html += '</div>';
+    html += '</div>';
+  }
+  wall.innerHTML = html;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function sendFeedback() {
+  var text = document.getElementById('fpText').value.trim();
+  if (!text) { document.getElementById('fpText').focus(); return; }
+  var type = selectedType || 'Feedback';
+  var author = document.getElementById('fpAuthor').value.trim();
+  var contact = document.getElementById('fpContact').value.trim();
+  var title = inferTitle(text, type);
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  var item = { type: type, title: title, text: text, author: author, contact: contact, date: dateStr };
+  var items = JSON.parse(localStorage.getItem('nblm_feedback') || '[]');
+  items.push(item);
+  localStorage.setItem('nblm_feedback', JSON.stringify(items));
+  renderWall();
+  var emailBody = 'Type: ' + type + '\nAuthor: ' + (author || 'Anonymous') + '\nContact: ' + (contact || 'n/a') + '\n\n' + text;
+  var subject = encodeURIComponent('NBLMV1.1 - ' + type);
+  var body = encodeURIComponent(emailBody);
+  window.location.href = 'mailto:donatomm@gmail.com?subject=' + subject + '&body=' + body;
+  document.getElementById('fpBody').style.display = 'none';
+  document.getElementById('fpSuccess').style.display = 'block';
+}
+
+document.getElementById('feedbackOverlay').addEventListener('click', function(e){
+  if (e.target === this) closeFeedback();
+});
+
+renderWall();
+</script>
+
+<script>
+// Scroll-based nav highlighting
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav-links a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const id = entry.target.id;
+      const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-80px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+function copyAntiFlat(btn) {
+  const text = document.getElementById('antiflat-prompt-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.style.color = '#788c5d';
+    btn.style.borderColor = '#788c5d';
+    setTimeout(() => {
+      btn.textContent = 'Copy Prompt';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2200);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = 'Copy Prompt'; }, 2200);
+  });
+}
+</script>
+
+</body>
+</html>
